@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AvatarBodyType {
+  humanoid_vrm
+  biped_mascot
+}
+
+enum AvatarSourceType {
+  parts
+  vrm_upload
+  vrm_editor
+}
+
+enum AvatarStatus {
+  active
+  archived
+  admin_suspended
+}
+
+enum AvatarFormat {
+  vrm
+  glb
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("admins")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  displayName  String   @map("display_name")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  avatars      Avatar[]
+  oauthTokens  OAuthToken[]
+
+  @@map("users")
+}
+
+model Operator {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  companyName  String   @map("company_name")
+  status       String   @default("pending") // pending | active | suspended
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  oauthClients OAuthClient[]
+  apiKeys      ApiKey[]
+
+  @@map("operators")
+}
+
+model Avatar {
+  id              String           @id @default(uuid())
+  userId          String           @map("user_id")
+  name            String
+  bodyType        AvatarBodyType   @map("body_type")
+  sourceType      AvatarSourceType @map("source_type")
+  format          AvatarFormat     @default(vrm)
+  status          AvatarStatus     @default(active)
+  externalEnabled Boolean          @default(false) @map("external_enabled")
+  adminApproved   Boolean          @default(true) @map("admin_approved")
+  isAdminCreated  Boolean          @default(false) @map("is_admin_created")
+  modelUrl        String?          @map("model_url")
+  thumbnailUrl    String?          @map("thumbnail_url")
+  partsConfig     Json?            @map("parts_config")
+  editorMetadata  Json?            @map("editor_metadata")
+  capabilities    Json             @default("{}")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([bodyType])
+  @@index([status])
+  @@map("avatars")
+}
+
+model AvatarPart {
+  id           String         @id @default(uuid())
+  bodyType     AvatarBodyType @map("body_type")
+  category     String
+  name         String
+  modelUrl     String?        @map("model_url")
+  thumbnailUrl String?        @map("thumbnail_url")
+  metadata     Json           @default("{}")
+  isActive     Boolean        @default(true) @map("is_active")
+  sortOrder    Int            @default(0) @map("sort_order")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  @@index([bodyType, category])
+  @@map("avatar_parts")
+}
+
+model OAuthClient {
+  id               String   @id @default(uuid())
+  operatorId       String   @map("operator_id")
+  clientId         String   @unique @map("client_id")
+  clientSecretHash String   @map("client_secret_hash")
+  name             String
+  redirectUris     Json     @default("[]") @map("redirect_uris")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@index([operatorId])
+  @@map("oauth_clients")
+}
+
+model ApiKey {
+  id             String    @id @default(uuid())
+  operatorId     String    @map("operator_id")
+  keyHash        String    @unique @map("key_hash")
+  name           String
+  allowedOrigins Json      @default("[]") @map("allowed_origins")
+  rateLimit      Int       @default(1000) @map("rate_limit")
+  revokedAt      DateTime? @map("revoked_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@index([operatorId])
+  @@map("api_keys")
+}
+
+model OAuthToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  clientId  String   @map("client_id")
+  tokenHash String   @unique @map("token_hash")
+  scopes    Json     @default("[\"avatars:read\"]")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([clientId])
+  @@map("oauth_tokens")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique @map("token_hash")
+  role      String   // admin | user | operator
+  subjectId String   @map("subject_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([subjectId, role])
+  @@map("refresh_tokens")
+}

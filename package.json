@@ -1,0 +1,21 @@
+{
+  "name": "avatar-management-system",
+  "private": true,
+  "scripts": {
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "dev:api": "pnpm --filter @ams/api dev",
+    "dev:admin": "pnpm --filter @ams/admin-web dev",
+    "dev:user": "pnpm --filter @ams/user-web dev",
+    "dev:operator": "pnpm --filter @ams/operator-web dev",
+    "build": "pnpm -r build",
+    "db:generate": "pnpm --filter @ams/api db:generate",
+    "db:migrate": "pnpm --filter @ams/api db:migrate",
+    "db:push": "pnpm --filter @ams/api db:push"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@9.15.0"
+}

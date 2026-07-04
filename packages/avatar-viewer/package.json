@@ -1,0 +1,47 @@
+{
+  "name": "@ams/avatar-viewer",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./preview": {
+      "types": "./dist/avatar-preview.d.ts",
+      "default": "./dist/avatar-preview.js"
+    },
+    "./vrm-preview": {
+      "types": "./dist/vrm-preview.d.ts",
+      "default": "./dist/vrm-preview.js"
+    },
+    "./resolve-parts": {
+      "types": "./dist/resolve-parts.d.ts",
+      "default": "./dist/resolve-parts.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "dependencies": {
+    "@ams/shared-types": "workspace:*",
+    "@pixiv/three-vrm": "^3.3.0",
+    "@react-three/drei": "^10.0.6",
+    "@react-three/fiber": "^9.1.2",
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.2",
+    "@types/three": "^0.170.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.7.3"
+  }
+}
