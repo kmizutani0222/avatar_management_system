@@ -2,8 +2,8 @@
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef, type RefObject } from 'react';
-import type { Group } from 'three';
-import { Vector3 } from 'three';
+import type { Group, PerspectiveCamera } from 'three';
+import { MathUtils, Vector3 } from 'three';
 import AmsClient from '@ams/sdk-web';
 import {
   applyVrmRestPose,
@@ -38,18 +38,38 @@ export interface SdkDemoSceneProps {
   onError?: (message: string) => void;
 }
 
-function FollowCamera({ targetRef }: { targetRef: RefObject<Group | null> }) {
+const CAMERA_DISTANCE = 3.2;
+const DEFAULT_FOV = 42;
+const MIN_FOV = 22;
+const MAX_FOV = 62;
+
+function FollowCamera({
+  targetRef,
+  fovRef,
+}: {
+  targetRef: RefObject<Group | null>;
+  fovRef: RefObject<number>;
+}) {
   const { camera } = useThree();
-  const offset = useRef(new Vector3(0, 1.35, 3.2));
   const lookAt = useRef(new Vector3());
+  const desiredPos = useRef(new Vector3());
 
   useFrame((_state, delta) => {
     const target = targetRef.current;
     if (!target) return;
-    lookAt.current.set(target.position.x, target.position.y + 1.05, target.position.z);
-    const desired = lookAt.current.clone().add(offset.current);
-    camera.position.lerp(desired, 1 - Math.exp(-4 * delta));
+    // 胸〜顔を中心にフレーミング（拡大時も上半身が見える）
+    lookAt.current.set(target.position.x, target.position.y + 1.0, target.position.z);
+    desiredPos.current.set(
+      lookAt.current.x,
+      lookAt.current.y + 0.35,
+      lookAt.current.z + CAMERA_DISTANCE,
+    );
+    camera.position.lerp(desiredPos.current, 1 - Math.exp(-4 * delta));
     camera.lookAt(lookAt.current);
+
+    const persp = camera as PerspectiveCamera;
+    persp.fov = MathUtils.lerp(persp.fov, fovRef.current, 1 - Math.exp(-8 * delta));
+    persp.updateProjectionMatrix();
   });
 
   return null;
@@ -61,9 +81,10 @@ function SdkDemoModel({
   expressions,
   locomotionInput,
   swayEnabled,
+  fovRef,
   onLoaded,
   onError,
-}: SdkDemoSceneProps) {
+}: SdkDemoSceneProps & { fovRef: RefObject<number> }) {
   const rootRef = useRef<Group>(null);
   const modelRef = useRef<LoadedAmsModel | null>(null);
   const locomotionRef = useRef<VrmLocomotionState>(createVrmLocomotionState());
@@ -150,17 +171,49 @@ function SdkDemoModel({
   return (
     <>
       <group ref={rootRef} />
-      <FollowCamera targetRef={rootRef} />
+      <FollowCamera targetRef={rootRef} fovRef={fovRef} />
     </>
   );
 }
 
 export function SdkDemoScene(props: SdkDemoSceneProps) {
+  const fovRef = useRef(DEFAULT_FOV);
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  function clampFov(value: number) {
+    return Math.min(MAX_FOV, Math.max(MIN_FOV, value));
+  }
+
+  function adjustZoom(delta: number) {
+    fovRef.current = clampFov(fovRef.current + delta);
+  }
+
+  function resetZoom() {
+    fovRef.current = DEFAULT_FOV;
+  }
+
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+
+    function onWheel(event: WheelEvent) {
+      event.preventDefault();
+      adjustZoom(event.deltaY > 0 ? 2.5 : -2.5);
+    }
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
+
+  useEffect(() => {
+    fovRef.current = DEFAULT_FOV;
+  }, [props.avatarId]);
+
   return (
-    <div className="preview-canvas sdk-demo-canvas">
+    <div ref={canvasRef} className="preview-canvas sdk-demo-canvas">
       <Canvas
         style={{ width: '100%', height: '100%', display: 'block' }}
-        camera={{ position: [0, 1.35, 3.2], fov: 45 }}
+        camera={{ position: [0, 1.35, CAMERA_DISTANCE], fov: DEFAULT_FOV }}
         gl={{ antialias: true, alpha: false }}
         dpr={[1, 1.5]}
       >
@@ -171,10 +224,21 @@ export function SdkDemoScene(props: SdkDemoSceneProps) {
           <circleGeometry args={[6, 48]} />
           <meshStandardMaterial color="#1e293b" />
         </mesh>
-        <SdkDemoModel {...props} />
+        <SdkDemoModel {...props} fovRef={fovRef} />
       </Canvas>
+      <div className="sdk-demo-view-controls" aria-label="表示倍率">
+        <button type="button" className="btn-secondary btn-sm" onClick={() => adjustZoom(3)} title="縮小">
+          −
+        </button>
+        <button type="button" className="btn-secondary btn-sm" onClick={resetZoom} title="倍率リセット">
+          100%
+        </button>
+        <button type="button" className="btn-secondary btn-sm" onClick={() => adjustZoom(-3)} title="拡大">
+          ＋
+        </button>
+      </div>
       <p className="sdk-demo-controls-hint" aria-hidden>
-        WASD / 矢印: 移動 · Shift: 走る · Space: ジャンプ
+        スクロール: 拡大・縮小 · WASD / 矢印: 移動 · Shift: 走る · Space: ジャンプ
       </p>
     </div>
   );
