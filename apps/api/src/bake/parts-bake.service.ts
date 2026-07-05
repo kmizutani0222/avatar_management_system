@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AvatarBodyType } from '@prisma/client';
-import { AvatarBodyType as SharedBodyType } from '@ams/shared-types';
+import { AvatarBodyType as SharedBodyType, isGlbBodyType } from '@ams/shared-types';
 import {
-  bakeBaseBody,
   bakeMergedAvatar,
   bakePartsThumbnail,
   resolvePartsFromSelections,
@@ -11,23 +10,15 @@ import {
 import type { PartsConfig } from '@ams/shared-types';
 import { PartsService } from '../parts/parts.service';
 import { StorageService } from '../storage/storage.service';
+import { BaseTemplateService } from './base-template.service';
 
 @Injectable()
 export class PartsBakeService {
   constructor(
     private readonly partsService: PartsService,
     private readonly storage: StorageService,
+    private readonly baseTemplate: BaseTemplateService,
   ) {}
-
-  private async ensureBaseTemplate(bodyType: AvatarBodyType): Promise<Buffer> {
-    const key = this.storage.baseTemplateKey(bodyType);
-    const existing = await this.storage.getObjectOrNull(key);
-    if (existing) return existing.body;
-
-    const generated = await bakeBaseBody(bodyType as SharedBodyType);
-    await this.storage.uploadBaseTemplate(bodyType, generated);
-    return generated;
-  }
 
   async bakeAndUpload(
     userId: string,
@@ -37,7 +28,7 @@ export class PartsBakeService {
   ): Promise<{ modelUrl: string; thumbnailUrl: string }> {
     const catalog = await this.partsService.listPublic(bodyType);
     const resolved = resolvePartsFromSelections(catalog, partsConfig.selections);
-    const baseBuffer = await this.ensureBaseTemplate(bodyType);
+    const baseBuffer = await this.baseTemplate.getBuffer(bodyType);
 
     const bakeParts: BakePartInput[] = [];
     for (const part of resolved) {
@@ -61,7 +52,7 @@ export class PartsBakeService {
       bakeParts,
       avatarName,
     );
-    const format = bodyType === 'biped_mascot' ? 'glb' : 'vrm';
+    const format = isGlbBodyType(bodyType as SharedBodyType) ? 'glb' : 'vrm';
     const modelUrl = await this.storage.uploadBakedModel(userId, buffer, format);
     const thumbnailBuffer = await bakePartsThumbnail(
       bodyType as SharedBodyType,

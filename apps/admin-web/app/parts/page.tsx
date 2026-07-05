@@ -82,7 +82,7 @@ function PartsContent() {
       <header className="page-header">
         <div>
           <h1>パーツ管理</h1>
-          <p className="subtitle">humanoid_vrm / biped_mascot</p>
+          <p className="subtitle">humanoid_vrm / biped_mascot / quadruped</p>
         </div>
         <Link href="/dashboard" className="btn-secondary">ダッシュボード</Link>
       </header>
@@ -98,6 +98,7 @@ function PartsContent() {
             >
               <option value={AvatarBodyType.HUMANOID_VRM}>humanoid_vrm</option>
               <option value={AvatarBodyType.BIPED_MASCOT}>biped_mascot</option>
+              <option value={AvatarBodyType.QUADRUPED}>quadruped</option>
             </select>
           </label>
           <label>
@@ -128,6 +129,7 @@ function PartsContent() {
               <option value="">すべて</option>
               <option value={AvatarBodyType.HUMANOID_VRM}>humanoid_vrm</option>
               <option value={AvatarBodyType.BIPED_MASCOT}>biped_mascot</option>
+              <option value={AvatarBodyType.QUADRUPED}>quadruped</option>
             </select>
           </label>
         </div>

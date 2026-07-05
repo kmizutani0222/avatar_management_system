@@ -8,6 +8,7 @@ import {
   ApiPart,
   CATEGORY_LABELS,
   defaultSelections,
+  getBaseTemplateUrl,
   groupPartsByCategory,
 } from '@/lib/avatars';
 
@@ -72,7 +73,12 @@ export function AvatarCreator({
   return (
     <form onSubmit={handleSubmit} className="creator-layout">
       <div className="creator-preview">
-        <AvatarPreview bodyType={bodyType} parts={resolvedParts} className="preview-canvas" />
+        <AvatarPreview
+          bodyType={bodyType}
+          parts={resolvedParts}
+          className="preview-canvas"
+          baseTemplateUrl={getBaseTemplateUrl(bodyType)}
+        />
       </div>
 
       <div className="creator-form">

@@ -70,6 +70,8 @@ function DashboardContent() {
         <div className="nav-grid">
           <Link href="/users" className="nav-card">ユーザー管理</Link>
           <Link href="/parts" className="nav-card">パーツ管理</Link>
+          <Link href="/templates" className="nav-card">ベーステンプレート</Link>
+          <Link href="/settings/expressions" className="nav-card">表情モーフ設定</Link>
           <Link href="/avatars" className="nav-card">アバター管理</Link>
           <Link href="/operators" className="nav-card">運営者管理</Link>
         </div>

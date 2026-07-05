@@ -1,7 +1,8 @@
-/** Supported avatar body types (Phase 0 scope) */
+/** Supported avatar body types */
 export enum AvatarBodyType {
   HUMANOID_VRM = 'humanoid_vrm',
   BIPED_MASCOT = 'biped_mascot',
+  QUADRUPED = 'quadruped',
 }
 
 /** How the avatar was created */
@@ -39,12 +40,23 @@ export const DEFAULT_CAPABILITIES: Record<AvatarBodyType, AvatarCapabilities> = 
     humanoidRig: true,
   },
   [AvatarBodyType.BIPED_MASCOT]: {
-    expressions: true,
-    lookAt: true,
-    springBone: true,
-    humanoidRig: true,
+    expressions: false,
+    lookAt: false,
+    springBone: false,
+    humanoidRig: false,
+  },
+  [AvatarBodyType.QUADRUPED]: {
+    expressions: false,
+    lookAt: false,
+    springBone: false,
+    humanoidRig: false,
   },
 };
+
+/** GLB output (non-VRM rig) body types */
+export function isGlbBodyType(bodyType: AvatarBodyType): boolean {
+  return bodyType === AvatarBodyType.BIPED_MASCOT || bodyType === AvatarBodyType.QUADRUPED;
+}
 
 export interface AvatarSummary {
   id: string;
@@ -93,6 +105,24 @@ export interface PartMetadata {
   preview?: PartPreviewMeta;
   bake?: PartBakeMeta;
 }
+
+/** Admin-tunable scales for procedural VRM expression morphs (Phase 16/18). */
+export interface ExpressionMorphSettings {
+  mouthScale: number;
+  eyeScale: number;
+  browScale: number;
+  /** Per-expression intensity multipliers (0–2), keyed by VRM preset name (Phase 18). */
+  expressionIntensity?: Partial<Record<VrmExpressionPreset, number>>;
+}
+
+export const DEFAULT_EXPRESSION_MORPH_SETTINGS: ExpressionMorphSettings = {
+  mouthScale: 1,
+  eyeScale: 1,
+  browScale: 1,
+  expressionIntensity: {},
+};
+
+export const EXPRESSION_MORPH_SETTINGS_KEY = 'expression_morph_settings';
 
 /** Parts selection stored on avatar */
 export interface PartsConfig {

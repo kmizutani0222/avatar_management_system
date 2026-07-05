@@ -16,6 +16,7 @@ import {
   fetchAvatars,
   getAvatarModelUrl,
   getAvatarThumbnailUrl,
+  getBaseTemplateUrl,
   updateAvatar,
 } from '@/lib/avatars';
 
@@ -135,6 +136,7 @@ function AvatarCard({
             parts={resolved}
             className="avatar-card-canvas"
             showControlsHint={false}
+            baseTemplateUrl={getBaseTemplateUrl(avatar.bodyType as AvatarBodyType)}
           />
         ) : isVrm && avatar.modelUrl ? (
           <VrmPreview
@@ -201,13 +203,14 @@ function DashboardContent() {
 
   async function loadData() {
     if (!token) return;
-    const [av, humanoid, mascot] = await Promise.all([
+    const [av, humanoid, mascot, quadruped] = await Promise.all([
       fetchAvatars(token),
       fetch(`${getApiUrl()}/api/parts?bodyType=humanoid_vrm`).then((r) => r.json()),
       fetch(`${getApiUrl()}/api/parts?bodyType=biped_mascot`).then((r) => r.json()),
+      fetch(`${getApiUrl()}/api/parts?bodyType=quadruped`).then((r) => r.json()),
     ]);
     setAvatars(sortAvatars(av));
-    setPartsCatalog([...humanoid, ...mascot]);
+    setPartsCatalog([...humanoid, ...mascot, ...quadruped]);
   }
 
   /** 作成日順で固定（updatedAt 順だと外部連携トグルで並び替わり、WebGL プレビューが壊れる） */

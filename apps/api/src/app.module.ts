@@ -10,6 +10,7 @@ import { PartsModule } from './parts/parts.module';
 import { AdminModule } from './admin/admin.module';
 import { OperatorModule } from './operator/operator.module';
 import { OAuthModule } from './oauth/oauth.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { OAuthModule } from './oauth/oauth.module';
     AdminModule,
     OperatorModule,
     OAuthModule,
+    SettingsModule,
   ],
 })
 export class AppModule {}

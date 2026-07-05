@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import type { AvatarBodyType, PartPreviewMeta } from '@ams/shared-types';
-import { getAttachPosition, HUMANOID_BASE, MASCOT_BASE } from './attach-points';
+import { getAttachPosition, HUMANOID_BASE, MASCOT_BASE, QUADRUPED_BASE } from './attach-points';
 
-function createPartMesh(preview: PartPreviewMeta): THREE.Mesh {
-  const [ax, ay, az] = getAttachPosition(preview.attachTo);
+function createPartMesh(bodyType: AvatarBodyType, preview: PartPreviewMeta): THREE.Mesh {
+  const [ax, ay, az] = getAttachPosition(preview.attachTo, bodyType);
   const [ox, oy, oz] = preview.offset;
   const [sx, sy, sz] = preview.scale;
   const position = new THREE.Vector3(ax + ox, ay + oy, az + oz);
@@ -104,6 +104,50 @@ function addMascotBase(group: THREE.Group) {
   }
 }
 
+function addQuadrupedBase(group: THREE.Group) {
+  const { bodyColor, headColor, legColor } = QUADRUPED_BASE;
+  const body = new THREE.Color(bodyColor);
+  const head = new THREE.Color(headColor);
+  const leg = new THREE.Color(legColor);
+
+  const torso = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.18, 0.55, 8, 16),
+    new THREE.MeshStandardMaterial({ color: body }),
+  );
+  torso.rotation.x = Math.PI / 2;
+  torso.position.set(0, 0.45, 0);
+  group.add(torso);
+
+  const headMesh = new THREE.Mesh(
+    new THREE.SphereGeometry(0.2, 16, 16),
+    new THREE.MeshStandardMaterial({ color: head }),
+  );
+  headMesh.position.set(0, 0.55, 0.42);
+  group.add(headMesh);
+
+  for (const [x, z] of [
+    [-0.22, 0.28],
+    [0.22, 0.28],
+    [-0.22, -0.28],
+    [0.22, -0.28],
+  ] as const) {
+    const legMesh = new THREE.Mesh(
+      new THREE.CapsuleGeometry(0.06, 0.28, 6, 12),
+      new THREE.MeshStandardMaterial({ color: leg }),
+    );
+    legMesh.position.set(x, 0.2, z);
+    group.add(legMesh);
+  }
+
+  const tailStub = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.05, 0.12, 6, 12),
+    new THREE.MeshStandardMaterial({ color: body }),
+  );
+  tailStub.rotation.x = Math.PI / 2;
+  tailStub.position.set(0, 0.48, -0.42);
+  group.add(tailStub);
+}
+
 export function buildPartsScene(
   bodyType: AvatarBodyType,
   parts: PartPreviewMeta[],
@@ -113,12 +157,14 @@ export function buildPartsScene(
 
   if (bodyType === 'humanoid_vrm') {
     addHumanoidBase(avatar);
+  } else if (bodyType === 'quadruped') {
+    addQuadrupedBase(avatar);
   } else {
     addMascotBase(avatar);
   }
 
   for (const preview of parts) {
-    avatar.add(createPartMesh(preview));
+    avatar.add(createPartMesh(bodyType, preview));
   }
 
   scene.add(avatar);

@@ -285,6 +285,129 @@ const mascotParts: PartSeed[] = [
   },
 ];
 
+const quadrupedParts: PartSeed[] = [
+  {
+    bodyType: 'quadruped',
+    category: 'fur',
+    name: 'Smooth Coat',
+    sortOrder: 1,
+    metadata: {
+      preview: {
+        color: '#a1887f',
+        geometry: 'box',
+        attachTo: 'body',
+        offset: [0, 0.05, 0],
+        scale: [1.2, 0.9, 1.4],
+      },
+    },
+  },
+  {
+    bodyType: 'quadruped',
+    category: 'fur',
+    name: 'Fluffy Coat',
+    sortOrder: 2,
+    metadata: {
+      preview: {
+        color: '#d7ccc8',
+        geometry: 'sphere',
+        attachTo: 'body',
+        offset: [0, 0.08, 0],
+        scale: [1.35, 1.1, 1.5],
+      },
+    },
+  },
+  {
+    bodyType: 'quadruped',
+    category: 'ears',
+    name: 'Pointy Ears',
+    sortOrder: 1,
+    metadata: {
+      preview: {
+        color: '#8d6e63',
+        geometry: 'box',
+        attachTo: 'head',
+        offset: [0.14, 0.12, 0.05],
+        scale: [0.35, 0.5, 0.2],
+      },
+    },
+  },
+  {
+    bodyType: 'quadruped',
+    category: 'ears',
+    name: 'Floppy Ears',
+    sortOrder: 2,
+    metadata: {
+      preview: {
+        color: '#bcaaa4',
+        geometry: 'capsule',
+        attachTo: 'head',
+        offset: [0.16, 0.05, 0],
+        scale: [0.3, 0.55, 0.25],
+      },
+    },
+  },
+  {
+    bodyType: 'quadruped',
+    category: 'tail',
+    name: 'Bushy Tail',
+    sortOrder: 1,
+    metadata: {
+      preview: {
+        color: '#795548',
+        geometry: 'capsule',
+        attachTo: 'back',
+        offset: [0, 0.05, -0.25],
+        scale: [0.7, 1.6, 0.7],
+      },
+    },
+  },
+  {
+    bodyType: 'quadruped',
+    category: 'tail',
+    name: 'Short Tail',
+    sortOrder: 2,
+    metadata: {
+      preview: {
+        color: '#a1887f',
+        geometry: 'sphere',
+        attachTo: 'back',
+        offset: [0, 0, -0.2],
+        scale: [0.5, 0.5, 0.5],
+      },
+    },
+  },
+  {
+    bodyType: 'quadruped',
+    category: 'collar',
+    name: 'Red Collar',
+    sortOrder: 1,
+    metadata: {
+      preview: {
+        color: '#e53935',
+        geometry: 'cylinder',
+        attachTo: 'head',
+        offset: [0, -0.08, 0.02],
+        scale: [1.1, 0.25, 1.1],
+      },
+    },
+  },
+  {
+    bodyType: 'quadruped',
+    category: 'accessory',
+    name: 'Bandana',
+    sortOrder: 1,
+    metadata: {
+      preview: {
+        color: '#42a5f5',
+        geometry: 'box',
+        attachTo: 'head',
+        offset: [0, -0.05, 0.12],
+        scale: [0.6, 0.15, 0.35],
+      },
+    },
+  },
+];
+
 async function main() {
   const adminPassword = await bcrypt.hash('admin123456', 10);
 
@@ -321,7 +444,16 @@ async function main() {
     },
   });
 
-  for (const part of [...humanoidParts, ...mascotParts]) {
+  await prisma.systemSetting.upsert({
+    where: { key: 'expression_morph_settings' },
+    update: {},
+    create: {
+      key: 'expression_morph_settings',
+      value: { mouthScale: 1, eyeScale: 1, browScale: 1 },
+    },
+  });
+
+  for (const part of [...humanoidParts, ...mascotParts, ...quadrupedParts]) {
     await upsertPart(part);
   }
 

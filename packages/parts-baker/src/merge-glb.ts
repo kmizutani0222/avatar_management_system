@@ -13,6 +13,8 @@ export interface MergePartInput {
   scale?: [number, number, number];
   /** Parent the part under this named node (e.g. a VRM bone) instead of the scene root. */
   attachNode?: string;
+  /** Client-side sway animation for tail/back accessories (GLB + sdk-three). */
+  sway?: boolean;
 }
 
 /**
@@ -41,6 +43,9 @@ export async function mergeGlbParts(baseBuffer: Buffer, parts: MergePartInput[])
     const wrapper = baseDoc.createNode(part.name);
     if (part.offset) wrapper.setTranslation(part.offset);
     if (part.scale) wrapper.setScale(part.scale);
+    if (part.sway) {
+      wrapper.setExtras({ ...(wrapper.getExtras() as object | null), amsSway: true });
+    }
 
     for (const child of [...mergedScene.listChildren()]) {
       wrapper.addChild(child);

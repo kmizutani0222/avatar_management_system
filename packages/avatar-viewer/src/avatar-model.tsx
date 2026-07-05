@@ -1,70 +1,11 @@
 'use client';
 
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
-import type { Mesh } from 'three';
-import type { PartPreviewMeta } from '@ams/shared-types';
-import { getAttachPosition } from './types';
+import { AvatarBodyType, type PartPreviewMeta } from '@ams/shared-types';
+import { PartMesh } from './part-mesh';
+import { HUMANOID_BASE, MASCOT_BASE, QUADRUPED_BASE } from './types';
 
-interface PartMeshProps {
-  preview: PartPreviewMeta;
-}
-
-function PartMesh({ preview }: PartMeshProps) {
-  const ref = useRef<Mesh>(null);
-  const [ax, ay, az] = getAttachPosition(preview.attachTo);
-  const [ox, oy, oz] = preview.offset;
-  const [sx, sy, sz] = preview.scale;
-
-  useFrame((_, delta) => {
-    if (ref.current && preview.attachTo === 'back') {
-      ref.current.rotation.y += delta * 0.5;
-    }
-  });
-
-  const position: [number, number, number] = [ax + ox, ay + oy, az + oz];
-
-  if (preview.geometry === 'sphere') {
-    return (
-      <mesh ref={ref} position={position} scale={[sx, sy, sz]}>
-        <sphereGeometry args={[0.2, 16, 16]} />
-        <meshStandardMaterial color={preview.color} />
-      </mesh>
-    );
-  }
-
-  if (preview.geometry === 'capsule') {
-    return (
-      <mesh ref={ref} position={position} scale={[sx, sy, sz]}>
-        <capsuleGeometry args={[0.15, 0.4, 8, 16]} />
-        <meshStandardMaterial color={preview.color} />
-      </mesh>
-    );
-  }
-
-  if (preview.geometry === 'cylinder') {
-    return (
-      <mesh ref={ref} position={position} scale={[sx, sy, sz]}>
-        <cylinderGeometry args={[0.08, 0.08, 0.4, 12]} />
-        <meshStandardMaterial color={preview.color} />
-      </mesh>
-    );
-  }
-
-  return (
-    <mesh ref={ref} position={position} scale={[sx, sy, sz]}>
-      <boxGeometry args={[0.3, 0.3, 0.3]} />
-      <meshStandardMaterial color={preview.color} />
-    </mesh>
-  );
-}
-
-interface HumanoidBaseProps {
-  skinColor: string;
-  bodyColor: string;
-}
-
-function HumanoidBase({ skinColor, bodyColor }: HumanoidBaseProps) {
+function HumanoidBase() {
+  const { skinColor, bodyColor } = HUMANOID_BASE;
   return (
     <group>
       <mesh position={[0, 1.5, 0]}>
@@ -95,12 +36,8 @@ function HumanoidBase({ skinColor, bodyColor }: HumanoidBaseProps) {
   );
 }
 
-interface MascotBaseProps {
-  bodyColor: string;
-  headColor: string;
-}
-
-function MascotBase({ bodyColor, headColor }: MascotBaseProps) {
+function MascotBase() {
+  const { bodyColor, headColor } = MASCOT_BASE;
   return (
     <group>
       <mesh position={[0, 0.75, 0]} scale={[1.2, 1.2, 1.2]}>
@@ -123,22 +60,58 @@ function MascotBase({ bodyColor, headColor }: MascotBaseProps) {
   );
 }
 
+function QuadrupedBase() {
+  const { bodyColor, headColor, legColor } = QUADRUPED_BASE;
+  return (
+    <group>
+      <mesh position={[0, 0.45, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <capsuleGeometry args={[0.18, 0.55, 8, 16]} />
+        <meshStandardMaterial color={bodyColor} />
+      </mesh>
+      <mesh position={[0, 0.55, 0.42]}>
+        <sphereGeometry args={[0.2, 16, 16]} />
+        <meshStandardMaterial color={headColor} />
+      </mesh>
+      {(
+        [
+          [-0.22, 0.28],
+          [0.22, 0.28],
+          [-0.22, -0.28],
+          [0.22, -0.28],
+        ] as const
+      ).map(([x, z]) => (
+        <mesh key={`${x}-${z}`} position={[x, 0.2, z]}>
+          <capsuleGeometry args={[0.06, 0.28, 6, 12]} />
+          <meshStandardMaterial color={legColor} />
+        </mesh>
+      ))}
+      <mesh position={[0, 0.48, -0.42]} rotation={[Math.PI / 2, 0, 0]}>
+        <capsuleGeometry args={[0.05, 0.12, 6, 12]} />
+        <meshStandardMaterial color={bodyColor} />
+      </mesh>
+    </group>
+  );
+}
+
 export interface AvatarModelProps {
-  bodyType: 'humanoid_vrm' | 'biped_mascot';
+  bodyType: AvatarBodyType;
   parts: PartPreviewMeta[];
   partKeys?: string[];
 }
 
+/** Fallback procedural base when base-template GLB is unavailable. */
 export function AvatarModel({ bodyType, parts, partKeys }: AvatarModelProps) {
   return (
     <group>
-      {bodyType === 'humanoid_vrm' ? (
-        <HumanoidBase skinColor="#f5d0a9" bodyColor="#4a90d9" />
-      ) : (
-        <MascotBase bodyColor="#ffb347" headColor="#ffcc80" />
-      )}
+      {bodyType === AvatarBodyType.HUMANOID_VRM && <HumanoidBase />}
+      {bodyType === AvatarBodyType.BIPED_MASCOT && <MascotBase />}
+      {bodyType === AvatarBodyType.QUADRUPED && <QuadrupedBase />}
       {parts.map((preview, i) => (
-        <PartMesh key={partKeys?.[i] ?? `${preview.attachTo}-${i}`} preview={preview} />
+        <PartMesh
+          key={partKeys?.[i] ?? `${preview.attachTo}-${i}`}
+          bodyType={bodyType}
+          preview={preview}
+        />
       ))}
     </group>
   );

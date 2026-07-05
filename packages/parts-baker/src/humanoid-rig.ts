@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { HUMANOID_BASE } from './attach-points';
-import type { PartPreviewMeta } from '@ams/shared-types';
+import type { ExpressionMorphSettings, PartPreviewMeta } from '@ams/shared-types';
 import { createExpressionHeadMesh } from './expression-morphs';
 
 /**
@@ -75,7 +75,9 @@ function addMesh(
  * Rigged humanoid base body: a VRM-standard bone hierarchy (named Groups)
  * with body meshes parented to the corresponding bones, in T-pose.
  */
-export function buildHumanoidRigScene(): THREE.Scene {
+export function buildHumanoidRigScene(
+  expressionSettings?: ExpressionMorphSettings,
+): THREE.Scene {
   const scene = new THREE.Scene();
 
   const hips = bone('hips', scene);
@@ -102,7 +104,7 @@ export function buildHumanoidRigScene(): THREE.Scene {
   const rightLowerLeg = bone('rightLowerLeg', rightUpperLeg);
   const rightFoot = bone('rightFoot', rightLowerLeg);
 
-  head.add(createExpressionHeadMesh(skinMaterial()));
+  head.add(createExpressionHeadMesh(skinMaterial(), expressionSettings));
   addMesh(spine, new THREE.CapsuleGeometry(0.2, 0.5, 8, 16), bodyMaterial(), [0, 0.05, 0]);
 
   const armGeo = () => new THREE.CapsuleGeometry(0.06, 0.2, 6, 12);

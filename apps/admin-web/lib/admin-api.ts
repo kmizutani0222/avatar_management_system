@@ -1,6 +1,8 @@
 import { authFetch } from '@ams/web-auth';
-import { AvatarBodyType } from '@ams/shared-types';
+import { AvatarBodyType, type ExpressionMorphSettings } from '@ams/shared-types';
 import { getApiUrl } from './api';
+
+export type { ExpressionMorphSettings };
 
 async function adminFetch<T>(
   token: string,
@@ -159,5 +161,54 @@ export function unpublishAdminAvatar(token: string, id: string) {
 export function deleteAdminAvatar(token: string, id: string) {
   return adminFetch<{ deleted: boolean }>(token, `/api/admin/avatars/${id}`, {
     method: 'DELETE',
+  });
+}
+
+export interface TemplateStatus {
+  bodyType: string;
+  key: string;
+  hasTemplate: boolean;
+  isCustomUpload: boolean;
+}
+
+export function fetchTemplateStatus(token: string) {
+  return adminFetch<TemplateStatus[]>(token, '/api/admin/templates');
+}
+
+export function uploadBaseTemplate(token: string, bodyType: string, file: File) {
+  const form = new FormData();
+  form.append('file', file);
+  return fetch(`${getApiUrl()}/api/admin/templates/${bodyType}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  }).then(async (res) => {
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message ?? 'テンプレートのアップロードに失敗しました');
+    }
+    return res.json() as Promise<TemplateStatus & { regenerated?: boolean }>;
+  });
+}
+
+export function resetBaseTemplate(token: string, bodyType: string) {
+  return adminFetch<TemplateStatus & { regenerated?: boolean }>(
+    token,
+    `/api/admin/templates/${bodyType}`,
+    { method: 'DELETE' },
+  );
+}
+
+export function fetchExpressionSettings(token: string) {
+  return adminFetch<ExpressionMorphSettings>(token, '/api/admin/settings/expressions');
+}
+
+export function updateExpressionSettings(
+  token: string,
+  data: Partial<ExpressionMorphSettings>,
+) {
+  return adminFetch<ExpressionMorphSettings>(token, '/api/admin/settings/expressions', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
   });
 }

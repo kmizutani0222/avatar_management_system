@@ -46,6 +46,54 @@ const model = await client.fetchModel(avatars[0].id); // ArrayBuffer (VRM/GLB)`,
     [apiBase],
   );
 
+  const glbSdkExample = useMemo(
+    () => `import { AmsClient } from '@ams/sdk-web';
+import { loadAmsModel, isLoadedGlb, updateGlbRuntime, updateVrmRuntime } from '@ams/sdk-three';
+
+const client = new AmsClient({ apiBase: '${apiBase}', accessToken });
+const model = await loadAmsModel(client, avatarId);
+
+if (isLoadedGlb(model)) {
+  scene.add(model.scene);
+  function animate(delta: number) {
+    updateGlbRuntime(model, delta, { sway: true }); // tail/back sway
+    renderer.render(scene, camera);
+  }
+  model.dispose();
+} else {
+  scene.add(model.vrm.scene);
+  function animate(delta: number) {
+    updateVrmRuntime(model.vrm, delta, { lookAtTarget: camera });
+    renderer.render(scene, camera);
+  }
+  model.dispose();
+}`,
+    [apiBase],
+  );
+
+  const threeSdkExample = useMemo(
+    () => `import * as THREE from 'three';
+import { AmsClient } from '@ams/sdk-web';
+import { loadAmsVrm, updateVrmRuntime } from '@ams/sdk-three';
+
+const client = new AmsClient({ apiBase: '${apiBase}', accessToken });
+const { vrm, dispose } = await loadAmsVrm(client, avatarId);
+
+scene.add(vrm.scene);
+
+function animate(deltaTime: number) {
+  updateVrmRuntime(vrm, deltaTime, {
+    lookAtTarget: camera,
+    expressions: { happy: 0.8, blink: 0 },
+  });
+  renderer.render(scene, camera);
+}
+
+// 画面を閉じるとき
+dispose();`,
+    [apiBase],
+  );
+
   const curlExample = useMemo(
     () => `# API キー
 curl -H "X-API-Key: <key>" -H "X-User-Id: <user_id>" \\
@@ -102,8 +150,8 @@ URL.revokeObjectURL(url);`,
         <h2>概要</h2>
         <ul className="hint-list">
           <li>外部連携では <code>GET /api/v1/avatars/:id/model</code> でベイク済みモデルのみ取得します。</li>
-          <li>humanoid_vrm のモデルは VRM 1.0（<code>VRMC_vrm</code> 拡張 + ヒューマノイドボーン + 表情 + LookAt + SpringBone）です。<code>@pixiv/three-vrm</code> の <code>expressionManager</code> / <code>lookAt</code> / <code>springBoneManager</code> で制御できます。</li>
-          <li>SpringBone は頭ボーン配下のパーツ（髪型など）に自動適用されます。尻尾・背中アクセサリーは chest 追従のため Phase 11 時点では対象外です。</li>
+          <li>humanoid_vrm のモデルは VRM 1.0（<code>VRMC_vrm</code> 拡張 + ヒューマノイドボーン + 表情 + LookAt + SpringBone）です。</li>
+          <li>SpringBone は頭（髪）と chest（背中・しっぽ）配下のパーツに適用されます。四足/マスコット GLB は <code>updateGlbRuntime</code> の sway でしっぽを揺らせます。</li>
           <li><code>partsConfig</code> は外部 API に含まれません。着せ替えは AMS サイト内で行い、保存時に VRM/GLB が生成されます。</li>
           <li><code>MODEL_DELIVERY=presigned</code> 時は 302 リダイレクトで署名 URL にフォローしてください（SDK は <code>redirect: follow</code> 対応）。</li>
         </ul>
@@ -113,6 +161,23 @@ URL.revokeObjectURL(url);`,
         <h2>@ams/sdk-web</h2>
         <p className="hint">モノレポ内パッケージ。npm 公開前は workspace 参照またはソースコピーで利用できます。</p>
         <CodeBlock code={npmExample} />
+      </div>
+
+      <div className="card">
+        <h2>@ams/sdk-three</h2>
+        <p className="hint">
+          Three.js / @pixiv/three-vrm のロード処理をラップします。外部サイト側は scene / camera / renderer を用意し、
+          読み込んだ <code>vrm.scene</code> を追加するだけです。
+        </p>
+        <CodeBlock code={threeSdkExample} />
+      </div>
+
+      <div className="card">
+        <h2>@ams/sdk-three — VRM / GLB 自動判別</h2>
+        <p className="hint">
+          <code>loadAmsModel</code> は avatar の format に応じて VRM または GLB をロードします。
+        </p>
+        <CodeBlock code={glbSdkExample} />
       </div>
 
       <div className="card">

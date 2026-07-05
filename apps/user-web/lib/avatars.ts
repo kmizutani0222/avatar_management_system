@@ -46,6 +46,11 @@ export async function fetchParts(bodyType: AvatarBodyType): Promise<ApiPart[]> {
   return res.json();
 }
 
+/** Base body GLB URL — same template used at bake time (MinIO / procedural). */
+export function getBaseTemplateUrl(bodyType: AvatarBodyType): string {
+  return `${getApiUrl()}/api/parts/base-template?bodyType=${bodyType}`;
+}
+
 export async function fetchAvatars(token: string): Promise<ApiAvatar[]> {
   const res = await authFetch(getApiUrl(), '/api/user/avatars', token);
   if (!res.ok) throw new Error('Failed to load avatars');
@@ -162,6 +167,8 @@ export const CATEGORY_LABELS: Record<string, string> = {
   eyes: '目',
   outfit: '服',
   accessory: 'アクセサリー',
+  fur: '毛並み',
+  collar: '首輪',
   body: '体',
   ears: '耳',
   tail: 'しっぽ',
@@ -171,6 +178,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
 export const BODY_TYPE_LABELS: Record<AvatarBodyType, string> = {
   [AvatarBodyType.HUMANOID_VRM]: '人型（VTuber 向け）',
   [AvatarBodyType.BIPED_MASCOT]: '二足マスコット',
+  [AvatarBodyType.QUADRUPED]: '四足動物',
 };
 
 export function defaultSelections(parts: ApiPart[]): Record<string, string> {

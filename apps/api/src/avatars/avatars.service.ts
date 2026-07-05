@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Avatar, Prisma } from '@prisma/client';
-import { AvatarBodyType as SharedBodyType, PartsConfig } from '@ams/shared-types';
+import { AvatarBodyType as SharedBodyType, isGlbBodyType, PartsConfig } from '@ams/shared-types';
 import { PrismaService } from '../prisma/prisma.module';
 import { StorageService } from '../storage/storage.service';
 import { PartsBakeService } from '../bake/parts-bake.service';
@@ -85,7 +85,7 @@ export class AvatarsService {
     if (!user) throw new NotFoundException('User not found');
 
     const capabilities = buildDefaultCapabilities(dto.bodyType as SharedBodyType);
-    const format = dto.bodyType === 'biped_mascot' ? 'glb' : 'vrm';
+    const format = isGlbBodyType(dto.bodyType as SharedBodyType) ? 'glb' : 'vrm';
 
     let modelUrl: string | undefined;
     let thumbnailUrl: string | undefined;
@@ -182,7 +182,7 @@ export class AvatarsService {
 
   async createForUser(userId: string, dto: CreateAvatarDto) {
     const capabilities = buildDefaultCapabilities(dto.bodyType as SharedBodyType);
-    const format = dto.bodyType === 'biped_mascot' ? 'glb' : 'vrm';
+    const format = isGlbBodyType(dto.bodyType as SharedBodyType) ? 'glb' : 'vrm';
 
     let modelUrl: string | undefined;
     let thumbnailUrl: string | undefined;

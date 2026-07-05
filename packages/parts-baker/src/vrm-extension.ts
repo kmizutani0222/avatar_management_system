@@ -29,7 +29,7 @@ const VRM_HUMAN_BONES = [
   'rightFoot',
 ] as const;
 
-const REQUIRED_BONES = [
+export const REQUIRED_VRM_BONES = [
   'hips',
   'spine',
   'head',
@@ -45,7 +45,30 @@ const REQUIRED_BONES = [
   'rightUpperLeg',
   'rightLowerLeg',
   'rightFoot',
-];
+] as const;
+
+function parseGlbJson(glb: Buffer): GltfJson {
+  if (glb.length < 20 || glb.readUInt32LE(0) !== GLB_MAGIC) {
+    throw new Error('Not a valid GLB buffer');
+  }
+  const jsonLength = glb.readUInt32LE(12);
+  if (glb.readUInt32LE(16) !== CHUNK_JSON) {
+    throw new Error('First GLB chunk is not JSON');
+  }
+  return JSON.parse(glb.subarray(20, 20 + jsonLength).toString('utf8')) as GltfJson;
+}
+
+/** Return VRM humanoid bone names that are missing from the GLB node list. */
+export function findMissingVrmBones(glb: Buffer): string[] {
+  const json = parseGlbJson(glb);
+  const nodes = json.nodes ?? [];
+  const humanBones: Record<string, { node: number }> = {};
+  for (const boneName of VRM_HUMAN_BONES) {
+    const index = nodes.findIndex((node) => node.name === boneName);
+    if (index >= 0) humanBones[boneName] = { node: index };
+  }
+  return REQUIRED_VRM_BONES.filter((boneName) => !(boneName in humanBones));
+}
 
 const HEAD_MESH_NAME = 'AMS_Head';
 
@@ -91,15 +114,8 @@ function buildExpressionPresets(json: GltfJson): Record<string, { morphTargetBin
  * Inject VRMC_vrm 1.0 (+ optional VRMC_springBone) into a GLB JSON chunk.
  */
 export function injectVrm10Extension(glb: Buffer, name: string): Buffer {
-  if (glb.length < 20 || glb.readUInt32LE(0) !== GLB_MAGIC) {
-    throw new Error('Not a valid GLB buffer');
-  }
   const jsonLength = glb.readUInt32LE(12);
-  if (glb.readUInt32LE(16) !== CHUNK_JSON) {
-    throw new Error('First GLB chunk is not JSON');
-  }
-
-  const json = JSON.parse(glb.subarray(20, 20 + jsonLength).toString('utf8')) as GltfJson;
+  const json = parseGlbJson(glb);
   const remainingChunks = glb.subarray(20 + jsonLength);
 
   const nodes = json.nodes ?? [];
@@ -109,15 +125,16 @@ export function injectVrm10Extension(glb: Buffer, name: string): Buffer {
     if (index >= 0) humanBones[boneName] = { node: index };
   }
 
-  const missing = REQUIRED_BONES.filter((boneName) => !(boneName in humanBones));
+  const missing = findMissingVrmBones(glb);
   if (missing.length > 0) {
     throw new Error(`GLB is missing required VRM bones: ${missing.join(', ')}`);
   }
 
   const expressionPresets = buildExpressionPresets(json);
   const headBoneNodeIndex = humanBones.head!.node;
+  const chestBoneNodeIndex = humanBones.chest?.node;
   const lookAt = buildLookAtExtension();
-  const springBone = buildSpringBoneExtension(json, headBoneNodeIndex);
+  const springBone = buildSpringBoneExtension(json, headBoneNodeIndex, chestBoneNodeIndex);
 
   const extensionsUsed = new Set([...(json.extensionsUsed ?? []), 'VRMC_vrm']);
   if (springBone) extensionsUsed.add('VRMC_springBone');

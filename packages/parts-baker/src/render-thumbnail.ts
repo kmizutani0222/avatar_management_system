@@ -1,6 +1,6 @@
 import sharp from 'sharp';
-import type { AvatarBodyType, PartPreviewMeta } from '@ams/shared-types';
-import { getAttachPosition, HUMANOID_BASE, MASCOT_BASE } from './attach-points';
+import { AvatarBodyType, type PartPreviewMeta } from '@ams/shared-types';
+import { getAttachPosition, HUMANOID_BASE, MASCOT_BASE, QUADRUPED_BASE } from './attach-points';
 
 const SIZE = 512;
 const CX = SIZE / 2;
@@ -73,8 +73,8 @@ function mascotBaseShapes(): string {
   return shapes.join('\n    ');
 }
 
-function partShape(preview: PartPreviewMeta): string {
-  const [ax, ay] = getAttachPosition(preview.attachTo);
+function partShape(bodyType: AvatarBodyType, preview: PartPreviewMeta): string {
+  const [ax, ay] = getAttachPosition(preview.attachTo, bodyType);
   const [ox, oy] = preview.offset;
   const [sx, sy] = preview.scale;
   const [px, py] = toSvg(ax + ox, ay + oy);
@@ -92,12 +92,44 @@ function partShape(preview: PartPreviewMeta): string {
   }
 }
 
+function quadrupedBaseShapes(): string {
+  const shapes: string[] = [];
+  const { bodyColor, headColor, legColor } = QUADRUPED_BASE;
+
+  const [tx, ty] = toSvg(0, 0.45);
+  shapes.push(roundedRect(tx, ty, UNIT * 0.75, UNIT * 0.32, bodyColor));
+
+  const [hx, hy] = toSvg(0, 0.55);
+  shapes.push(ellipse(hx, hy, UNIT * 0.22, UNIT * 0.22, headColor));
+
+  for (const [x, z] of [
+    [-0.22, 0.28],
+    [0.22, 0.28],
+    [-0.22, -0.28],
+    [0.22, -0.28],
+  ] as const) {
+    const [lx, ly] = toSvg(x, 0.2);
+    shapes.push(roundedRect(lx, ly, UNIT * 0.1, UNIT * 0.32, legColor));
+  }
+
+  const [bx, by] = toSvg(0, 0.48);
+  shapes.push(roundedRect(bx, by, UNIT * 0.12, UNIT * 0.18, bodyColor, -90));
+
+  return shapes.join('\n    ');
+}
+
+function baseShapes(bodyType: AvatarBodyType): string {
+  if (bodyType === 'humanoid_vrm') return humanoidBaseShapes();
+  if (bodyType === 'quadruped') return quadrupedBaseShapes();
+  return mascotBaseShapes();
+}
+
 export function renderPartsThumbnailSvg(
   bodyType: AvatarBodyType,
   parts: PartPreviewMeta[],
 ): string {
-  const base = bodyType === 'humanoid_vrm' ? humanoidBaseShapes() : mascotBaseShapes();
-  const accessories = parts.map(partShape).join('\n    ');
+  const base = baseShapes(bodyType);
+  const accessories = parts.map((part) => partShape(bodyType, part)).join('\n    ');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}">

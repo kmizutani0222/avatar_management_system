@@ -6,6 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   CreateBucketCommand,
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadBucketCommand,
   PutObjectCommand,
@@ -117,8 +118,8 @@ export class StorageService implements OnModuleInit {
   }
 
   baseTemplateKey(bodyType: string): string {
-    // v3: head mesh gained VRM expression morph targets (Phase 10)
-    return `templates/${bodyType}/base-v3.glb`;
+    // v4: humanoid body is a SkinnedMesh with vertex weights (Phase 17)
+    return `templates/${bodyType}/base-v4.glb`;
   }
 
   partAssetKey(partId: string): string {
@@ -164,6 +165,10 @@ export class StorageService implements OnModuleInit {
       }),
     );
     return key;
+  }
+
+  async deleteObject(key: string): Promise<void> {
+    await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
   }
 
   async getObjectOrNull(key: string): Promise<{ body: Buffer; contentType: string } | null> {

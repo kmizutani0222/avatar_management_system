@@ -10,6 +10,7 @@ datasource db {
 enum AvatarBodyType {
   humanoid_vrm
   biped_mascot
+  quadruped
 }
 
 enum AvatarSourceType {
@@ -113,6 +114,14 @@ model AvatarPart {
 
   @@index([bodyType, category])
   @@map("avatar_parts")
+}
+
+model SystemSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
 }
 
 model OAuthClient {

@@ -108,6 +108,7 @@ services:
       - ./packages:/app/packages
       - /app/node_modules
       - /app/apps/admin-web/node_modules
+      - /app/packages/parts-baker/node_modules
       - /app/apps/admin-web/.next
 
   user-web:

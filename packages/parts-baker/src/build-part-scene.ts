@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import type { PartPreviewMeta } from '@ams/shared-types';
+import { AvatarBodyType, type PartPreviewMeta } from '@ams/shared-types';
 import { getAttachPosition } from './attach-points';
 
-function createPartMesh(preview: PartPreviewMeta): THREE.Mesh {
-  const [ax, ay, az] = getAttachPosition(preview.attachTo);
+function createPartMesh(bodyType: AvatarBodyType, preview: PartPreviewMeta): THREE.Mesh {
+  const [ax, ay, az] = getAttachPosition(preview.attachTo, bodyType);
   const [ox, oy, oz] = preview.offset;
   const [sx, sy, sz] = preview.scale;
   const material = new THREE.MeshStandardMaterial({ color: new THREE.Color(preview.color) });
@@ -31,8 +31,11 @@ function createPartMesh(preview: PartPreviewMeta): THREE.Mesh {
 }
 
 /** Export a single procedural part mesh as GLB (no body base). */
-export function buildPartOnlyScene(preview: PartPreviewMeta): THREE.Scene {
+export function buildPartOnlyScene(
+  preview: PartPreviewMeta,
+  bodyType: AvatarBodyType = AvatarBodyType.HUMANOID_VRM,
+): THREE.Scene {
   const scene = new THREE.Scene();
-  scene.add(createPartMesh(preview));
+  scene.add(createPartMesh(bodyType, preview));
   return scene;
 }
