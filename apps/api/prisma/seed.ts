@@ -309,6 +309,18 @@ async function main() {
     },
   });
 
+  const operatorPassword = await bcrypt.hash('operator123456', 10);
+  await prisma.operator.upsert({
+    where: { email: 'operator@example.com' },
+    update: { status: 'active' },
+    create: {
+      email: 'operator@example.com',
+      passwordHash: operatorPassword,
+      companyName: 'Demo Operator Inc.',
+      status: 'active',
+    },
+  });
+
   for (const part of [...humanoidParts, ...mascotParts]) {
     await upsertPart(part);
   }

@@ -66,12 +66,13 @@ function DashboardContent() {
       </div>
 
       <div className="card">
-        <h2>管理メニュー（Phase 2 以降）</h2>
-        <ul>
-          <li>ユーザー管理</li>
-          <li>パーツ管理（humanoid_vrm / biped_mascot）</li>
-          <li>アバター管理・公開設定</li>
-        </ul>
+        <h2>管理メニュー</h2>
+        <div className="nav-grid">
+          <Link href="/users" className="nav-card">ユーザー管理</Link>
+          <Link href="/parts" className="nav-card">パーツ管理</Link>
+          <Link href="/avatars" className="nav-card">アバター管理</Link>
+          <Link href="/operators" className="nav-card">運営者管理</Link>
+        </div>
       </div>
 
       <p className="footer-link">

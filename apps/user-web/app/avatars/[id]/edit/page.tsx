@@ -54,8 +54,10 @@ function EditAvatarContent() {
     <main>
       <header className="page-header">
         <div>
-          <h1>アバターを編集</h1>
-          <p className="subtitle">{BODY_TYPE_LABELS[avatar.bodyType as AvatarBodyType]}</p>
+          <h1>着せ替え・編集</h1>
+          <p className="subtitle">
+            {BODY_TYPE_LABELS[avatar.bodyType as AvatarBodyType]} — 保存すると VRM/GLB を再生成します
+          </p>
         </div>
       </header>
 

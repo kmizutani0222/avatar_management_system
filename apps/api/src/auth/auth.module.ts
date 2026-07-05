@@ -6,6 +6,11 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RolesGuard } from './guards/roles.guard';
+import { OperatorActiveGuard } from './guards/operator-active.guard';
+import { ApiKeyGuard } from './guards/api-key.guard';
+import { OAuthTokenGuard } from './guards/oauth-token.guard';
+import { ExternalAuthGuard } from './guards/external-auth.guard';
+import { OriginCheckService } from '../common/origin-check.service';
 
 @Module({
   imports: [
@@ -19,7 +24,24 @@ import { RolesGuard } from './guards/roles.guard';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, RolesGuard],
-  exports: [AuthService, JwtModule, RolesGuard],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    RolesGuard,
+    OperatorActiveGuard,
+    OriginCheckService,
+    ApiKeyGuard,
+    OAuthTokenGuard,
+    ExternalAuthGuard,
+  ],
+  exports: [
+    AuthService,
+    JwtModule,
+    RolesGuard,
+    OperatorActiveGuard,
+    ApiKeyGuard,
+    OAuthTokenGuard,
+    ExternalAuthGuard,
+  ],
 })
 export class AuthModule {}

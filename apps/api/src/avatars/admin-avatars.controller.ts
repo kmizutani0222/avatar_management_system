@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -14,7 +15,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ROLE_ADMIN } from '../common/constants';
 import { AvatarsService } from './avatars.service';
-import { AdminUpdateAvatarDto } from './dto/avatar.dto';
+import { AdminCreateAvatarDto, AdminUpdateAvatarDto } from './dto/avatar.dto';
 
 @ApiTags('admin-avatars')
 @ApiBearerAuth()
@@ -32,9 +33,29 @@ export class AdminAvatarsController {
     return this.avatarsService.listForAdmin({ bodyType, status });
   }
 
+  @Get(':id')
+  getOne(@Param('id') id: string) {
+    return this.avatarsService.findOneForAdmin(id);
+  }
+
+  @Post()
+  create(@Body() dto: AdminCreateAvatarDto) {
+    return this.avatarsService.createForAdmin(dto);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: AdminUpdateAvatarDto) {
     return this.avatarsService.updateForAdmin(id, dto);
+  }
+
+  @Post(':id/publish')
+  publish(@Param('id') id: string) {
+    return this.avatarsService.publishForAdmin(id);
+  }
+
+  @Post(':id/unpublish')
+  unpublish(@Param('id') id: string) {
+    return this.avatarsService.unpublishForAdmin(id);
   }
 
   @Delete(':id')

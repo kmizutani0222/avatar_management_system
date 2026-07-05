@@ -17,6 +17,7 @@ export interface VrmPreviewProps {
   editorMetadata?: VrmEditorMetadata | null;
   className?: string;
   showControlsHint?: boolean;
+  interactive?: boolean;
 }
 
 function applyEditorMetadata(vrm: VRM, metadata?: VrmEditorMetadata | null) {
@@ -114,6 +115,7 @@ function VrmPreviewInner({
   editorMetadata,
   className,
   showControlsHint = true,
+  interactive = true,
 }: VrmPreviewProps) {
   return (
     <PreviewFrame className={className} showControlsHint={showControlsHint}>
@@ -127,7 +129,7 @@ function VrmPreviewInner({
         <ambientLight intensity={0.6} />
         <directionalLight position={[3, 5, 2]} intensity={1.2} />
         <VrmModel url={url} authHeader={authHeader} editorMetadata={editorMetadata} />
-        <PreviewOrbitControls />
+        {interactive && <PreviewOrbitControls />}
       </Canvas>
     </PreviewFrame>
   );

@@ -13,6 +13,8 @@ export interface AvatarPreviewProps {
   parts: ResolvedPart[];
   className?: string;
   showControlsHint?: boolean;
+  /** Dashboard cards: disable orbit controls to avoid WebGL conflicts across multiple canvases */
+  interactive?: boolean;
 }
 
 function AvatarPreviewInner({
@@ -20,6 +22,7 @@ function AvatarPreviewInner({
   parts,
   className,
   showControlsHint = true,
+  interactive = true,
 }: AvatarPreviewProps) {
   const previewMetas = parts.map((p) => p.preview);
 
@@ -41,7 +44,7 @@ function AvatarPreviewInner({
           parts={previewMetas}
           partKeys={parts.map((p) => p.category)}
         />
-        <PreviewOrbitControls />
+        {interactive && <PreviewOrbitControls />}
       </Canvas>
     </PreviewFrame>
   );

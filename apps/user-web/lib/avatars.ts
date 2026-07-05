@@ -19,6 +19,7 @@ export interface ApiAvatar {
   status: string;
   externalEnabled: boolean;
   modelUrl: string | null;
+  thumbnailUrl: string | null;
   partsConfig: PartsConfig | null;
   editorMetadata: VrmEditorMetadata | null;
   createdAt: string;
@@ -27,6 +28,10 @@ export interface ApiAvatar {
 
 export function getAvatarModelUrl(avatarId: string): string {
   return `${getApiUrl()}/api/user/avatars/${avatarId}/model`;
+}
+
+export function getAvatarThumbnailUrl(avatarId: string): string {
+  return `${getApiUrl()}/api/user/avatars/${avatarId}/thumbnail`;
 }
 
 export const SOURCE_TYPE_LABELS: Record<string, string> = {
@@ -87,7 +92,10 @@ export async function updateAvatar(
     method: 'PATCH',
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Failed to update avatar');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? 'Failed to update avatar');
+  }
   return res.json();
 }
 

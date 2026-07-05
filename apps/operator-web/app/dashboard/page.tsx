@@ -38,17 +38,22 @@ function DashboardContent() {
           <dd>{profile?.status ?? '—'}</dd>
         </dl>
         {profile?.status === 'pending' && (
-          <p className="hint">管理者の承認後、API キー発行が可能になります（Phase 5）。</p>
+          <p className="hint">管理者の承認後、API キー発行が可能になります。</p>
         )}
       </div>
 
       <div className="card">
-        <h2>外部連携（Phase 5 以降）</h2>
-        <ul>
-          <li>OAuth クライアント管理</li>
-          <li>API キー発行・ローテーション</li>
-          <li>利用状況ダッシュボード</li>
-        </ul>
+        <h2>外部連携</h2>
+        {profile?.status === 'active' ? (
+          <div className="nav-grid">
+            <Link href="/oauth-clients" className="nav-card">OAuth クライアント</Link>
+            <Link href="/api-keys" className="nav-card">API キー</Link>
+            <Link href="/sandbox" className="nav-card">連携サンドボックス</Link>
+            <Link href="/sdk" className="nav-card">SDK ガイド</Link>
+          </div>
+        ) : (
+          <p className="hint">承認待ちのため、外部連携機能は利用できません。</p>
+        )}
         <p className="hint">
           API ドキュメント: <a href={apiDocsUrl} target="_blank" rel="noreferrer">Swagger UI</a>
         </p>

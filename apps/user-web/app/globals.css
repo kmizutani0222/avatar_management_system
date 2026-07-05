@@ -196,6 +196,52 @@ a {
   font-size: 0.875rem;
 }
 
+.copy-id {
+  display: contents;
+}
+
+.copy-id dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.id-value,
+.avatar-id-row code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  word-break: break-all;
+}
+
+.avatar-id-row {
+  margin-top: 0.25rem;
+}
+
+.avatar-external-badge {
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #22d3ee;
+}
+
+.external-help-list {
+  margin-top: 0.75rem;
+  padding-left: 1.25rem;
+  font-size: 0.875rem;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.external-help-list li + li {
+  margin-top: 0.75rem;
+}
+
+.external-help-list strong {
+  color: #e2e8f0;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -390,6 +436,12 @@ a {
 .avatar-card-canvas {
   height: 180px !important;
   min-height: 180px !important;
+}
+
+.avatar-card-thumbnail {
+  width: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .preview-placeholder {

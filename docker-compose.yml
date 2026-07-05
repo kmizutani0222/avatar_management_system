@@ -48,6 +48,7 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+      target: development
     ports:
       - '4003:3000'
     environment:
@@ -75,11 +76,24 @@ services:
       - ./packages:/app/packages
       - /app/node_modules
       - /app/apps/api/node_modules
+      - /app/packages/parts-baker/node_modules
+      - /app/packages/shared-types/node_modules
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          "node -e \"require('http').get('http://127.0.0.1:3000/api/health/ready',(r)=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 90s
 
   admin-web:
     build:
       context: .
       dockerfile: apps/admin-web/Dockerfile
+      target: development
     ports:
       - '4000:3000'
     environment:
@@ -87,7 +101,8 @@ services:
       API_INTERNAL_URL: http://api:3000
       NEXT_PUBLIC_APP_ROLE: admin
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     volumes:
       - ./apps/admin-web:/app/apps/admin-web
       - ./packages:/app/packages
@@ -99,6 +114,7 @@ services:
     build:
       context: .
       dockerfile: apps/user-web/Dockerfile
+      target: development
     ports:
       - '4001:3000'
     environment:
@@ -106,7 +122,8 @@ services:
       API_INTERNAL_URL: http://api:3000
       NEXT_PUBLIC_APP_ROLE: user
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     volumes:
       - ./apps/user-web:/app/apps/user-web
       - ./packages:/app/packages
@@ -118,6 +135,7 @@ services:
     build:
       context: .
       dockerfile: apps/operator-web/Dockerfile
+      target: development
     ports:
       - '4002:3000'
     environment:
@@ -125,7 +143,8 @@ services:
       API_INTERNAL_URL: http://api:3000
       NEXT_PUBLIC_APP_ROLE: operator
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     volumes:
       - ./apps/operator-web:/app/apps/operator-web
       - ./packages:/app/packages

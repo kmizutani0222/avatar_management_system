@@ -7,20 +7,20 @@ const METHODS = [
   {
     href: '/avatars/new/parts',
     title: 'パーツ選択式',
-    description: '髪型・目・服などを組み合わせて作成（humanoid_vrm / biped_mascot）',
-    badge: 'Phase 2',
+    description: 'サイト内でパーツを組み合わせて作成・着せ替え。保存時に VRM/GLB を生成します',
+    badge: '推奨',
   },
   {
     href: '/avatars/new/upload',
     title: 'VRM アップロード',
     description: '既存の .vrm ファイルをアップロード（humanoid_vrm のみ）',
-    badge: 'Phase 3',
+    badge: 'VRM',
   },
   {
     href: '/avatars/new/editor',
     title: 'VRM エディタ',
     description: 'VRM を読み込み、表情（BlendShape）を調整して保存',
-    badge: 'Phase 3',
+    badge: 'VRM',
   },
 ];
 

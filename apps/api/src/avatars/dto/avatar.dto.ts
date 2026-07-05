@@ -68,3 +68,10 @@ export class AdminUpdateAvatarDto extends UpdateAvatarDto {
   @IsString()
   status?: string;
 }
+
+export class AdminCreateAvatarDto extends CreateAvatarDto {
+  @ApiProperty({ description: 'Owner user ID' })
+  @IsString()
+  @MinLength(1)
+  userId!: string;
+}

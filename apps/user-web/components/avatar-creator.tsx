@@ -76,6 +76,10 @@ export function AvatarCreator({
       </div>
 
       <div className="creator-form">
+        <p className="hint creator-hint">
+          パーツの組み立て・着せ替えはこのサイト内で行います。保存すると VRM/GLB が生成され、
+          外部サイト（SDK）は <code>GET /api/v1/avatars/:id/model</code> でそのファイルのみ取得します。
+        </p>
         <div className="card">
           <h2>基本設定</h2>
           <label className="field-label">

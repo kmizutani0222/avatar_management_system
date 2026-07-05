@@ -6,11 +6,12 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   CreateBucketCommand,
+  GetObjectCommand,
   HeadBucketCommand,
   PutObjectCommand,
-  GetObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'crypto';
 import { MAX_VRM_SIZE_BYTES, MAX_VRM_SIZE_MB } from '../common/constants';
 
@@ -80,6 +81,98 @@ export class StorageService implements OnModuleInit {
     return key;
   }
 
+  async uploadBakedModel(
+    userId: string,
+    buffer: Buffer,
+    format: 'vrm' | 'glb',
+  ): Promise<string> {
+    const key = `avatars/${userId}/${randomUUID()}.${format}`;
+    const contentType = format === 'vrm' ? 'model/vrm' : 'model/gltf-binary';
+
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: buffer,
+        ContentType: contentType,
+      }),
+    );
+
+    return key;
+  }
+
+  async uploadThumbnail(userId: string, buffer: Buffer): Promise<string> {
+    const key = `thumbnails/${userId}/${randomUUID()}.png`;
+
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: buffer,
+        ContentType: 'image/png',
+      }),
+    );
+
+    return key;
+  }
+
+  baseTemplateKey(bodyType: string): string {
+    return `templates/${bodyType}/base.glb`;
+  }
+
+  partAssetKey(partId: string): string {
+    return `parts/${partId}/asset.glb`;
+  }
+
+  validateGlbFile(file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('GLB file is required');
+    if (file.size > MAX_VRM_SIZE_BYTES) {
+      throw new BadRequestException(`GLB file must be ${MAX_VRM_SIZE_MB}MB or less`);
+    }
+    const name = file.originalname.toLowerCase();
+    if (!name.endsWith('.glb') && !name.endsWith('.gltf')) {
+      throw new BadRequestException('File must have .glb or .gltf extension');
+    }
+    const header = file.buffer.subarray(0, 4).toString('utf8');
+    if (!header.startsWith('glTF')) {
+      throw new BadRequestException('Invalid glTF/GLB file format');
+    }
+  }
+
+  async uploadPartAsset(partId: string, buffer: Buffer): Promise<string> {
+    const key = this.partAssetKey(partId);
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: buffer,
+        ContentType: 'model/gltf-binary',
+      }),
+    );
+    return key;
+  }
+
+  async uploadBaseTemplate(bodyType: string, buffer: Buffer): Promise<string> {
+    const key = this.baseTemplateKey(bodyType);
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: buffer,
+        ContentType: 'model/gltf-binary',
+      }),
+    );
+    return key;
+  }
+
+  async getObjectOrNull(key: string): Promise<{ body: Buffer; contentType: string } | null> {
+    try {
+      return await this.getObject(key);
+    } catch {
+      return null;
+    }
+  }
+
   async getObject(key: string): Promise<{ body: Buffer; contentType: string }> {
     const res = await this.client.send(
       new GetObjectCommand({ Bucket: this.bucket, Key: key }),
@@ -90,6 +183,20 @@ export class StorageService implements OnModuleInit {
       body: Buffer.from(bytes),
       contentType: res.ContentType ?? 'model/vrm',
     };
+  }
+
+  async ping(): Promise<boolean> {
+    try {
+      await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async getPresignedModelUrl(key: string, expiresInSeconds = 300): Promise<string> {
+    const command = new GetObjectCommand({ Bucket: this.bucket, Key: key });
+    return getSignedUrl(this.client, command, { expiresIn: expiresInSeconds });
   }
 
   extractKeyFromModelUrl(modelUrl: string): string | null {

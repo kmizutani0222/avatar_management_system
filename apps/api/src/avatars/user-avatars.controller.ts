@@ -60,6 +60,18 @@ export class UserAvatarsController {
     res.send(body);
   }
 
+  @Get(':id/thumbnail')
+  async getThumbnail(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
+    const { body, contentType } = await this.avatarsService.getThumbnailForUser(user.sub, id);
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'private, max-age=300');
+    res.send(body);
+  }
+
   @Get(':id')
   getOne(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
     return this.avatarsService.findOneForUser(user.sub, id);
