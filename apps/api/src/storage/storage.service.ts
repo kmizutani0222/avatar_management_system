@@ -117,7 +117,8 @@ export class StorageService implements OnModuleInit {
   }
 
   baseTemplateKey(bodyType: string): string {
-    return `templates/${bodyType}/base.glb`;
+    // v3: head mesh gained VRM expression morph targets (Phase 10)
+    return `templates/${bodyType}/base-v3.glb`;
   }
 
   partAssetKey(partId: string): string {

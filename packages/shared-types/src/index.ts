@@ -172,6 +172,25 @@ export interface VrmEditorMetadata {
   blendShapes: Record<string, number>;
 }
 
+/** VRM 1.0 preset expressions baked into AMS humanoid_vrm avatars (Phase 10). */
+export const VRM_EXPRESSION_PRESETS = [
+  'happy',
+  'angry',
+  'sad',
+  'relaxed',
+  'surprised',
+  'aa',
+  'ih',
+  'ou',
+  'ee',
+  'oh',
+  'blink',
+  'blinkLeft',
+  'blinkRight',
+] as const;
+
+export type VrmExpressionPreset = (typeof VRM_EXPRESSION_PRESETS)[number];
+
 export interface AuthLoginResponse {
   accessToken: string;
   tokenType: string;

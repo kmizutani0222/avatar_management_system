@@ -6,6 +6,8 @@ import { ensureGltfExportPolyfills } from './node-polyfills';
 import { mergeGlbParts, tagAsVrm, type MergePartInput } from './merge-glb';
 import { getAttachPosition } from './attach-points';
 import { bakeDefaultVrmThumbnail, bakePartsThumbnail } from './render-thumbnail';
+import { ATTACH_TO_BONE, HUMANOID_BONE_WORLD, buildHumanoidRigScene } from './humanoid-rig';
+import { injectVrm10Extension } from './vrm-extension';
 
 export { buildPartsScene } from './build-scene';
 export { buildPartOnlyScene } from './build-part-scene';
@@ -14,6 +16,10 @@ export { mergeGlbParts, tagAsVrm } from './merge-glb';
 export { bakePartsThumbnail, bakeDefaultVrmThumbnail } from './render-thumbnail';
 export { resolvePartsFromSelections, parsePartMetadata } from './resolve-parts';
 export type { ResolvedPart } from './resolve-parts';
+export { buildHumanoidRigScene, HUMANOID_BONE_WORLD, ATTACH_TO_BONE } from './humanoid-rig';
+export { injectVrm10Extension } from './vrm-extension';
+export { buildLookAtExtension, buildSpringBoneExtension } from './vrm-lookat-spring';
+export { VRM_EXPRESSION_PRESETS, type VrmExpressionPreset } from './expression-morphs';
 
 export interface BakePartInput {
   name: string;
@@ -23,10 +29,10 @@ export interface BakePartInput {
   assetBuffer?: Buffer;
 }
 
-/** Procedural base body only (no accessories). */
+/** Procedural base body only (no accessories). Humanoid gets a VRM bone hierarchy. */
 export async function bakeBaseBody(bodyType: AvatarBodyType): Promise<Buffer> {
   ensureGltfExportPolyfills();
-  const scene = buildPartsScene(bodyType, []);
+  const scene = bodyType === 'humanoid_vrm' ? buildHumanoidRigScene() : buildPartsScene(bodyType, []);
   return exportSceneToGlb(scene);
 }
 
@@ -37,20 +43,32 @@ export async function bakeProceduralPart(preview: PartPreviewMeta): Promise<Buff
 }
 
 function resolvePartTransform(
+  bodyType: AvatarBodyType,
   preview: PartPreviewMeta,
   bake?: PartBakeMeta,
-): { offset: [number, number, number]; scale: [number, number, number] } {
+): { offset: [number, number, number]; scale: [number, number, number]; attachNode?: string } {
   const attachTo = bake?.attachTo ?? preview.attachTo;
   const [ax, ay, az] = getAttachPosition(attachTo);
   const [ox, oy, oz] = bake?.offset ?? preview.offset;
   const scale = bake?.scale ?? preview.scale;
-  return {
-    offset: [ax + ox, ay + oy, az + oz],
-    scale,
-  };
+
+  if (bodyType === 'humanoid_vrm') {
+    const boneName = ATTACH_TO_BONE[attachTo];
+    if (boneName) {
+      // Parent under the bone so parts follow bone animation; offset is bone-relative.
+      const [bx, by, bz] = HUMANOID_BONE_WORLD[boneName];
+      return {
+        offset: [ax + ox - bx, ay + oy - by, az + oz - bz],
+        scale,
+        attachNode: boneName,
+      };
+    }
+  }
+
+  return { offset: [ax + ox, ay + oy, az + oz], scale };
 }
 
-/** Merge base + part GLBs into final model. Tags humanoid output as VRM meta. */
+/** Merge base + part GLBs into final model. Humanoid output gets a VRMC_vrm 1.0 extension. */
 export async function bakeMergedAvatar(
   bodyType: AvatarBodyType,
   baseBuffer: Buffer,
@@ -60,7 +78,7 @@ export async function bakeMergedAvatar(
   const mergeInputs: MergePartInput[] = [];
 
   for (const part of parts) {
-    const { offset, scale } = resolvePartTransform(part.preview, part.bake);
+    const { offset, scale, attachNode } = resolvePartTransform(bodyType, part.preview, part.bake);
     let buffer: Buffer;
 
     if (part.assetBuffer) {
@@ -69,14 +87,14 @@ export async function bakeMergedAvatar(
       buffer = await bakeProceduralPart(part.preview);
     }
 
-    mergeInputs.push({ name: part.name, buffer, offset, scale });
+    mergeInputs.push({ name: part.name, buffer, offset, scale, attachNode });
   }
 
   let merged =
     mergeInputs.length > 0 ? await mergeGlbParts(baseBuffer, mergeInputs) : baseBuffer;
 
   if (bodyType === 'humanoid_vrm') {
-    merged = await tagAsVrm(merged, avatarName);
+    merged = injectVrm10Extension(merged, avatarName);
   }
 
   return merged;

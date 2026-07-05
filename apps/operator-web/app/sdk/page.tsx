@@ -72,6 +72,18 @@ loader.register((parser) => new VRMLoaderPlugin(parser));
 const gltf = await loader.loadAsync(url);
 const vrm = gltf.userData.vrm;
 VRMUtils.rotateVRM0(vrm);
+
+// VRM 1.0 expressions (happy, blink, aa, ih, ou, …)
+vrm.expressionManager?.setValue('happy', 1.0);
+vrm.expressionManager?.setValue('blink', 1.0);
+
+// LookAt — pass a world-space target each frame
+vrm.lookAt?.target.set(0, 1.6, 1);
+vrm.lookAt?.update(0);
+
+// SpringBone — updated each frame by three-vrm (hair/accessories sway)
+// vrm.springBoneManager?.update(deltaTime);
+
 URL.revokeObjectURL(url);`,
     [apiBase],
   );
@@ -90,6 +102,8 @@ URL.revokeObjectURL(url);`,
         <h2>概要</h2>
         <ul className="hint-list">
           <li>外部連携では <code>GET /api/v1/avatars/:id/model</code> でベイク済みモデルのみ取得します。</li>
+          <li>humanoid_vrm のモデルは VRM 1.0（<code>VRMC_vrm</code> 拡張 + ヒューマノイドボーン + 表情 + LookAt + SpringBone）です。<code>@pixiv/three-vrm</code> の <code>expressionManager</code> / <code>lookAt</code> / <code>springBoneManager</code> で制御できます。</li>
+          <li>SpringBone は頭ボーン配下のパーツ（髪型など）に自動適用されます。尻尾・背中アクセサリーは chest 追従のため Phase 11 時点では対象外です。</li>
           <li><code>partsConfig</code> は外部 API に含まれません。着せ替えは AMS サイト内で行い、保存時に VRM/GLB が生成されます。</li>
           <li><code>MODEL_DELIVERY=presigned</code> 時は 302 リダイレクトで署名 URL にフォローしてください（SDK は <code>redirect: follow</code> 対応）。</li>
         </ul>
