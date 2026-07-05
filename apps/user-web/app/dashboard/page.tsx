@@ -185,6 +185,11 @@ function AvatarCard({
               エディタ
             </Link>
           )}
+          {avatar.bodyType === 'humanoid_vrm' && avatar.modelUrl && (
+            <Link href={`/avatars/${avatar.id}/expressions`} className="btn-secondary btn-sm">
+              表情設定
+            </Link>
+          )}
           <button type="button" className="btn-secondary btn-sm" onClick={onToggleExternal}>
             外部連携: {avatar.externalEnabled ? 'ON' : 'OFF'}
           </button>

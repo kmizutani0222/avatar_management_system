@@ -198,8 +198,13 @@ export interface OAuthTokenResponse {
   scope: string;
 }
 
+/** Named expression presets, e.g. { "笑顔": { happy: 1 }, "悲しい": { sad: 0.9 } } */
+export type ExpressionPresetMap = Record<string, Record<string, number>>;
+
 export interface VrmEditorMetadata {
   blendShapes: Record<string, number>;
+  /** User-defined expression presets switchable from the SDK. */
+  expressionPresets?: ExpressionPresetMap;
 }
 
 /** VRM 1.0 preset expressions baked into AMS humanoid_vrm avatars (Phase 10). */

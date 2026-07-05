@@ -22,6 +22,8 @@ export interface ExternalAvatar {
   adminApproved: boolean;
   hasModel: boolean;
   hasThumbnail: boolean;
+  /** User-defined expression presets (name → expression values), switchable at runtime. */
+  expressionPresets: Record<string, Record<string, number>>;
   createdAt: string;
   updatedAt: string;
 }

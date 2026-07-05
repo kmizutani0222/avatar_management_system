@@ -29,6 +29,10 @@ export class AvatarsService {
 
   /** External SDK: metadata only — no partsConfig (VRM is fetched via /model). */
   toExternalAvatar(avatar: Avatar) {
+    const editorMetadata = avatar.editorMetadata as {
+      expressionPresets?: Record<string, Record<string, number>>;
+    } | null;
+
     return {
       id: avatar.id,
       name: avatar.name,
@@ -40,6 +44,7 @@ export class AvatarsService {
       adminApproved: avatar.adminApproved,
       hasModel: Boolean(avatar.modelUrl),
       hasThumbnail: Boolean(avatar.thumbnailUrl),
+      expressionPresets: editorMetadata?.expressionPresets ?? {},
       createdAt: avatar.createdAt,
       updatedAt: avatar.updatedAt,
     };
@@ -273,14 +278,13 @@ export class AvatarsService {
     const avatar = await this.findOwnedAvatar(userId, avatarId);
 
     if (avatar.sourceType === 'vrm_upload') {
-      const hasDisallowed =
-        dto.name !== undefined ||
-        dto.partsConfig !== undefined ||
-        dto.editorMetadata !== undefined;
+      // Model contents are immutable (re-upload only), but display settings
+      // (external toggle, expression presets in editorMetadata) may change.
+      const hasDisallowed = dto.name !== undefined || dto.partsConfig !== undefined;
       if (hasDisallowed) {
         throw new ForbiddenException('VRM upload avatars cannot be edited. Re-upload instead.');
       }
-      if (dto.externalEnabled === undefined) {
+      if (dto.externalEnabled === undefined && dto.editorMetadata === undefined) {
         throw new ForbiddenException('VRM upload avatars cannot be edited. Re-upload instead.');
       }
     }

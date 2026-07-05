@@ -48,6 +48,7 @@ function SdkDemoContent() {
   const [modelError, setModelError] = useState<string | null>(null);
   const [capabilities, setCapabilities] = useState<SdkDemoCapabilities | null>(null);
   const [expressions, setExpressions] = useState<ExpressionValues>({});
+  const [activePreset, setActivePreset] = useState<string | null>(null);
   const [swayEnabled, setSwayEnabled] = useState(true);
   const [privateModelCount, setPrivateModelCount] = useState(0);
 
@@ -184,6 +185,7 @@ function SdkDemoContent() {
       initial[name] = 0;
     }
     setExpressions(initial);
+    setActivePreset(null);
   }, []);
 
   const handleModelError = useCallback((message: string) => {
@@ -193,7 +195,20 @@ function SdkDemoContent() {
 
   function handleExpressionChange(name: string, value: number) {
     setExpressions((prev) => ({ ...prev, [name]: value }));
+    setActivePreset(null);
   }
+
+  function applyPreset(name: string | null) {
+    setActivePreset(name);
+    const zeroed: ExpressionValues = {};
+    for (const expr of capabilities?.expressionNames ?? []) {
+      zeroed[expr] = 0;
+    }
+    const preset = name ? selectedAvatar?.expressionPresets?.[name] : undefined;
+    setExpressions({ ...zeroed, ...(preset ?? {}) });
+  }
+
+  const presetNames = Object.keys(selectedAvatar?.expressionPresets ?? {});
 
   function triggerJump() {
     locomotionInputRef.current.jumpPressed = true;
@@ -338,9 +353,37 @@ function SdkDemoContent() {
             </div>
           )}
 
+          {capabilities?.hasExpressions && presetNames.length > 0 && (
+            <div className="card">
+              <h2>表情プリセット</h2>
+              <div className="sdk-demo-mode-buttons">
+                <button
+                  type="button"
+                  className={activePreset === null ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}
+                  onClick={() => applyPreset(null)}
+                >
+                  通常
+                </button>
+                {presetNames.map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    className={activePreset === name ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}
+                    onClick={() => applyPreset(name)}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+              <p className="hint">
+                プリセットは各アバターの「表情設定」画面で編集できます。
+              </p>
+            </div>
+          )}
+
           {capabilities?.hasExpressions && (
             <div className="card">
-              <h2>表情</h2>
+              <h2>表情（個別調整）</h2>
               {capabilities.expressionNames.map((expr) => (
                 <label key={expr} className="slider-label">
                   {expr}
