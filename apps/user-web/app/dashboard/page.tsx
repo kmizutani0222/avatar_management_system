@@ -58,11 +58,13 @@ function CopyId({ label, value }: { label: string; value: string }) {
 
 function AvatarThumbnail({
   avatarId,
+  cacheKey,
   token,
   alt,
   className,
 }: {
   avatarId: string;
+  cacheKey: string;
   token: string;
   alt: string;
   className?: string;
@@ -73,8 +75,9 @@ function AvatarThumbnail({
     let objectUrl: string | null = null;
     let cancelled = false;
 
-    fetch(getAvatarThumbnailUrl(avatarId), {
+    fetch(getAvatarThumbnailUrl(avatarId, cacheKey), {
       headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
     })
       .then((res) => (res.ok ? res.blob() : null))
       .then((blob) => {
@@ -88,7 +91,7 @@ function AvatarThumbnail({
       cancelled = true;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [avatarId, token]);
+  }, [avatarId, cacheKey, token]);
 
   if (!url) {
     return <div className={`preview-loading-sm ${className ?? ''}`.trim()}>...</div>;
@@ -117,7 +120,9 @@ function AvatarCard({
     : [];
 
   const isVrm = avatar.sourceType === 'vrm_upload' || avatar.sourceType === 'vrm_editor';
-  const useThumbnail = Boolean(avatar.thumbnailUrl);
+  const previewKey = avatar.updatedAt;
+  const useVrmPreview = isVrm && Boolean(avatar.modelUrl);
+  const useThumbnail = Boolean(avatar.thumbnailUrl) && !useVrmPreview;
 
   return (
     <div className="avatar-card">
@@ -125,23 +130,24 @@ function AvatarCard({
         {useThumbnail ? (
           <AvatarThumbnail
             avatarId={avatar.id}
+            cacheKey={previewKey}
             token={token}
             alt={avatar.name}
             className="avatar-card-canvas avatar-card-thumbnail"
           />
         ) : avatar.sourceType === 'parts' && resolved.length > 0 ? (
           <AvatarPreview
-            key={avatar.id}
+            key={`${avatar.id}-${previewKey}`}
             bodyType={avatar.bodyType as AvatarBodyType}
             parts={resolved}
             className="avatar-card-canvas"
             showControlsHint={false}
             baseTemplateUrl={getBaseTemplateUrl(avatar.bodyType as AvatarBodyType)}
           />
-        ) : isVrm && avatar.modelUrl ? (
+        ) : useVrmPreview ? (
           <VrmPreview
-            key={avatar.id}
-            url={getAvatarModelUrl(avatar.id)}
+            key={`${avatar.id}-${previewKey}`}
+            url={getAvatarModelUrl(avatar.id, previewKey)}
             authHeader={authHeader}
             editorMetadata={avatar.editorMetadata}
             className="avatar-card-canvas"
@@ -245,10 +251,11 @@ function DashboardContent() {
     );
     try {
       await updateAvatar(token, avatar.id, { externalEnabled: next });
-    } catch {
+    } catch (err) {
       setAvatars((prev) =>
         prev.map((a) => (a.id === avatar.id ? { ...a, externalEnabled: !next } : a)),
       );
+      alert(err instanceof Error ? err.message : '外部連携の更新に失敗しました');
     }
   }
 
@@ -260,6 +267,9 @@ function DashboardContent() {
           <h1>マイアバター</h1>
         </div>
         <div className="header-actions">
+          <Link href="/sdk-demo" className="btn-secondary">
+            SDK デモ
+          </Link>
           <Link href="/avatars/new" className="btn-primary">
             + 新規作成
           </Link>
@@ -303,6 +313,10 @@ function DashboardContent() {
             <strong>安全か</strong> — 外部連携 OFF のアバターは API から取得できません。
             ON にしたアバターは、承認済みの外部サービス（運営者）から参照可能になります。
             不要になったら OFF にしてください。
+          </li>
+          <li>
+            <Link href="/sdk-demo">SDK デモ画面</Link> で、外部サイトと同じ API
+            経路のアバター表示・表情操作を試せます。
           </li>
         </ul>
       </div>

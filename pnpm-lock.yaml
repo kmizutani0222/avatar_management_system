@@ -196,12 +196,24 @@ importers:
       '@ams/avatar-viewer':
         specifier: workspace:*
         version: link:../../packages/avatar-viewer
+      '@ams/sdk-three':
+        specifier: workspace:*
+        version: link:../../packages/sdk-three
+      '@ams/sdk-web':
+        specifier: workspace:*
+        version: link:../../packages/sdk-web
       '@ams/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
       '@ams/web-auth':
         specifier: workspace:*
         version: link:../../packages/web-auth
+      '@react-three/drei':
+        specifier: ^10.0.6
+        version: 10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(three@0.170.0))(@types/react@19.2.17)(@types/three@0.170.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(three@0.170.0)
+      '@react-three/fiber':
+        specifier: ^9.1.2
+        version: 9.6.1(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(three@0.170.0)
       next:
         specifier: ^15.1.3
         version: 15.5.20(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -211,6 +223,9 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.2.7(react@19.2.7)
+      three:
+        specifier: ^0.170.0
+        version: 0.170.0
     devDependencies:
       '@types/node':
         specifier: ^22.10.2
@@ -221,6 +236,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.0.2
         version: 19.2.3(@types/react@19.2.17)
+      '@types/three':
+        specifier: ^0.170.0
+        version: 0.170.0
       typescript:
         specifier: ^5.7.3
         version: 5.9.3

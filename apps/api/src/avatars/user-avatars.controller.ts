@@ -57,6 +57,7 @@ export class UserAvatarsController {
     const { body, contentType } = await this.avatarsService.getModelForUser(user.sub, id);
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', 'inline');
+    res.setHeader('Cache-Control', 'private, no-cache');
     res.send(body);
   }
 
@@ -68,7 +69,7 @@ export class UserAvatarsController {
   ) {
     const { body, contentType } = await this.avatarsService.getThumbnailForUser(user.sub, id);
     res.setHeader('Content-Type', contentType);
-    res.setHeader('Cache-Control', 'private, max-age=300');
+    res.setHeader('Cache-Control', 'private, no-cache');
     res.send(body);
   }
 

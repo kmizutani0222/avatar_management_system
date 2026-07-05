@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { RequireAuth, useAuth } from '@ams/web-auth';
-import { fetchAvatar, reuploadVrmAvatar } from '@/lib/avatars';
+import { fetchAvatar, getAvatarModelUrl, reuploadVrmAvatar } from '@/lib/avatars';
 
 const VrmPreview = dynamic(
   () => import('@ams/avatar-viewer/vrm-preview').then((m) => m.VrmPreview),
@@ -19,6 +19,7 @@ function ReuploadContent() {
   const id = params.id as string;
 
   const [avatarName, setAvatarName] = useState('');
+  const [currentPreviewKey, setCurrentPreviewKey] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -27,7 +28,10 @@ function ReuploadContent() {
   useEffect(() => {
     if (!token) return;
     fetchAvatar(token, id)
-      .then((a) => setAvatarName(a.name))
+      .then((a) => {
+        setAvatarName(a.name);
+        setCurrentPreviewKey(a.updatedAt);
+      })
       .catch(() => setError('アバターが見つかりません'));
   }, [token, id]);
 
@@ -63,9 +67,22 @@ function ReuploadContent() {
       <form onSubmit={handleSubmit} className="creator-layout">
         <div className="creator-preview">
           {previewUrl ? (
-            <VrmPreview url={previewUrl} className="preview-canvas" />
+            <>
+              <p className="hint" style={{ marginBottom: '0.5rem' }}>新しい VRM（プレビュー）</p>
+              <VrmPreview url={previewUrl} className="preview-canvas" />
+            </>
+          ) : token && currentPreviewKey ? (
+            <>
+              <p className="hint" style={{ marginBottom: '0.5rem' }}>現在の VRM</p>
+              <VrmPreview
+                key={currentPreviewKey}
+                url={getAvatarModelUrl(id, currentPreviewKey)}
+                authHeader={`Bearer ${token}`}
+                className="preview-canvas"
+              />
+            </>
           ) : (
-            <div className="preview-loading">新しい VRM を選択してください</div>
+            <div className="preview-loading">読み込み中...</div>
           )}
         </div>
 
@@ -80,6 +97,10 @@ function ReuploadContent() {
                 required
               />
             </label>
+            <p className="hint">
+              差し替え後、ダッシュボードのプレビューが更新されます。「再アップロード」は VRM
+              アップロード方式のファイル差し替え操作です。
+            </p>
           </div>
           {error && <p className="form-error">{error}</p>}
           <div className="creator-actions">

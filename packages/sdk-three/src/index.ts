@@ -3,6 +3,13 @@ import { VRMLoaderPlugin, VRMUtils, type VRM } from '@pixiv/three-vrm';
 import type { Object3D, Texture } from 'three';
 import type { AmsClient } from '@ams/sdk-web';
 import {
+  applyVrmRestPose,
+  createVrmLocomotionState,
+  updateVrmLocomotion,
+  type LocomotionInput,
+  type VrmLocomotionState,
+} from './vrm-locomotion';
+import {
   findSwayNodes,
   loadGlbFromArrayBuffer,
   updateGlbRuntime,
@@ -41,6 +48,8 @@ export interface UpdateVrmOptions {
   expressions?: ExpressionValues;
   /** Usually a camera or target Object3D. Assigned to vrm.lookAt.target when present. */
   lookAtTarget?: Object3D;
+  locomotion?: LocomotionInput;
+  locomotionState?: VrmLocomotionState;
 }
 
 function createObjectUrl(buffer: ArrayBuffer, mime: string): string {
@@ -174,6 +183,10 @@ export function updateVrmRuntime(
   deltaSeconds: number,
   options: UpdateVrmOptions = {},
 ): void {
+  if (options.locomotion && options.locomotionState) {
+    updateVrmLocomotion(vrm, options.locomotionState, deltaSeconds, options.locomotion);
+  }
+
   if (options.expressions) {
     applyExpressions(vrm, options.expressions, false);
   }
@@ -186,6 +199,18 @@ export function updateVrmRuntime(
   vrm.expressionManager?.update();
   vrm.update(deltaSeconds);
 }
+
+export {
+  applyVrmRestPose,
+  createVrmLocomotionState,
+  updateVrmLocomotion,
+  hasVrmHumanoid,
+  hasDirectionInput,
+  DEFAULT_LOCOMOTION_INPUT,
+  type LocomotionInput,
+  type LocomotionMode,
+  type VrmLocomotionState,
+} from './vrm-locomotion';
 
 export {
   loadGlbFromArrayBuffer,

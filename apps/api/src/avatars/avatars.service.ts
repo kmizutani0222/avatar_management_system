@@ -273,7 +273,16 @@ export class AvatarsService {
     const avatar = await this.findOwnedAvatar(userId, avatarId);
 
     if (avatar.sourceType === 'vrm_upload') {
-      throw new ForbiddenException('VRM upload avatars cannot be edited. Re-upload instead.');
+      const hasDisallowed =
+        dto.name !== undefined ||
+        dto.partsConfig !== undefined ||
+        dto.editorMetadata !== undefined;
+      if (hasDisallowed) {
+        throw new ForbiddenException('VRM upload avatars cannot be edited. Re-upload instead.');
+      }
+      if (dto.externalEnabled === undefined) {
+        throw new ForbiddenException('VRM upload avatars cannot be edited. Re-upload instead.');
+      }
     }
 
     if (avatar.sourceType === 'vrm_editor' && dto.partsConfig !== undefined) {

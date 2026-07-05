@@ -95,7 +95,9 @@ function VrmUploadContent() {
               />
             </label>
             <p className="hint">選択中: {fileLabel}</p>
-            <p className="hint">アップロード後は内容の編集不可。変更時は再アップロードしてください。</p>
+            <p className="hint">
+              アップロード後はダッシュボードで 3D プレビューが表示されます。ファイルを差し替えるときだけ「再アップロード」を使います（着せ替えや表情編集は VRM エディタ方式をご利用ください）。
+            </p>
           </div>
 
           <div className="card">

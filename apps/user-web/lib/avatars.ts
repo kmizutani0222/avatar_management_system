@@ -26,12 +26,14 @@ export interface ApiAvatar {
   updatedAt: string;
 }
 
-export function getAvatarModelUrl(avatarId: string): string {
-  return `${getApiUrl()}/api/user/avatars/${avatarId}/model`;
+export function getAvatarModelUrl(avatarId: string, cacheKey?: string): string {
+  const url = `${getApiUrl()}/api/user/avatars/${avatarId}/model`;
+  return cacheKey ? `${url}?v=${encodeURIComponent(cacheKey)}` : url;
 }
 
-export function getAvatarThumbnailUrl(avatarId: string): string {
-  return `${getApiUrl()}/api/user/avatars/${avatarId}/thumbnail`;
+export function getAvatarThumbnailUrl(avatarId: string, cacheKey?: string): string {
+  const url = `${getApiUrl()}/api/user/avatars/${avatarId}/thumbnail`;
+  return cacheKey ? `${url}?v=${encodeURIComponent(cacheKey)}` : url;
 }
 
 export const SOURCE_TYPE_LABELS: Record<string, string> = {

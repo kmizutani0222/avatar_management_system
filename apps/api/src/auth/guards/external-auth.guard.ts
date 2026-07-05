@@ -6,12 +6,14 @@ import {
 } from '@nestjs/common';
 import { ApiKeyGuard } from './api-key.guard';
 import { OAuthTokenGuard } from './oauth-token.guard';
+import { UserSessionExternalGuard } from './user-session-external.guard';
 
-/** Accepts OAuth Bearer token or API key + user id */
+/** Accepts OAuth Bearer token, user-portal JWT, or API key + user id */
 @Injectable()
 export class ExternalAuthGuard implements CanActivate {
   constructor(
     private readonly oauthGuard: OAuthTokenGuard,
+    private readonly userSessionGuard: UserSessionExternalGuard,
     private readonly apiKeyGuard: ApiKeyGuard,
   ) {}
 
@@ -21,7 +23,11 @@ export class ExternalAuthGuard implements CanActivate {
     const authHeader = typeof rawAuth === 'string' ? rawAuth : undefined;
 
     if (authHeader?.startsWith('Bearer ')) {
-      return this.oauthGuard.canActivate(context);
+      try {
+        return await this.oauthGuard.canActivate(context);
+      } catch {
+        return this.userSessionGuard.canActivate(context);
+      }
     }
 
     if (req.headers['x-api-key']) {

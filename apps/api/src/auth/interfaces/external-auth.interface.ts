@@ -12,7 +12,13 @@ export interface OAuthAuthContext {
   scopes: string[];
 }
 
-export type ExternalAuthContext = ApiKeyAuthContext | OAuthAuthContext;
+/** AMS user portal login JWT — same external avatar access as OAuth for that user. */
+export interface SessionAuthContext {
+  type: 'session';
+  userId: string;
+}
+
+export type ExternalAuthContext = ApiKeyAuthContext | OAuthAuthContext | SessionAuthContext;
 
 export interface ExternalAuthRequest {
   externalAuth?: ExternalAuthContext;

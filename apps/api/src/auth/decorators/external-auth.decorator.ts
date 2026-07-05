@@ -13,6 +13,6 @@ export const ExternalUserId = createParamDecorator(
     const req = ctx.switchToHttp().getRequest<{ externalAuth?: ExternalAuthContext }>();
     const auth = req.externalAuth;
     if (!auth) throw new Error('External auth context missing');
-    return auth.type === 'oauth' ? auth.userId : auth.userId;
+    return auth.userId;
   },
 );
