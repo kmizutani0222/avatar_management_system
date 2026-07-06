@@ -18,6 +18,7 @@ export default function DashboardPage() {
           <div className="nav-grid">
             <Link href="/oauth-clients" className="nav-card">OAuth クライアント</Link>
             <Link href="/api-keys" className="nav-card">API キー</Link>
+            <Link href="/integration-guide" className="nav-card">導入手順書</Link>
             <Link href="/sandbox" className="nav-card">SDK サンドボックス</Link>
             <Link href="/sdk" className="nav-card">SDK ガイド</Link>
           </div>

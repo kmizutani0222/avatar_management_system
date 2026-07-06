@@ -40,6 +40,7 @@ export const OPERATOR_NAV: NavItem[] = [
   { href: '/dashboard', label: 'ダッシュボード', icon: '◫', section: '概要' },
   { href: '/oauth-clients', label: 'OAuth クライアント', icon: '🔑', section: '連携' },
   { href: '/api-keys', label: 'API キー', icon: '🛡', section: '連携' },
+  { href: '/integration-guide', label: '導入手順書', icon: '📄', section: '連携' },
   { href: '/sandbox', label: 'SDK サンドボックス', icon: '🧪', section: '開発' },
   { href: '/sdk', label: 'SDK ガイド', icon: '📘', section: '開発' },
 ];

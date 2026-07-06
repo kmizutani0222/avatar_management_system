@@ -11,6 +11,11 @@
     "dev:user": "pnpm --filter @ams/user-web dev",
     "dev:operator": "pnpm --filter @ams/operator-web dev",
     "build": "pnpm -r build",
+    "sdk:build": "pnpm --filter @ams/shared-types build && pnpm --filter @ams/sdk-web build && pnpm --filter @ams/sdk-three build",
+    "sdk:link": "pnpm sdk:build && bash scripts/sdk-link.sh && node scripts/sdk-link.mjs",
+    "sdk:link:to": "bash scripts/sdk-link-to.sh",
+    "sdk:unlink": "bash scripts/sdk-unlink.sh",
+    "sdk:watch": "pnpm --parallel --filter @ams/shared-types --filter @ams/sdk-web --filter @ams/sdk-three dev",
     "db:generate": "pnpm --filter @ams/api db:generate",
     "db:migrate": "pnpm --filter @ams/api db:migrate",
     "db:push": "pnpm --filter @ams/api db:push"

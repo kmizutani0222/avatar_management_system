@@ -146,9 +146,25 @@
   color: var(--ams-text);
 }
 
+.integration-guide-card {
+  overflow: hidden;
+}
+
+.guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ams-space-3);
+  margin-top: var(--ams-space-4);
+}
+
 .card .btn-primary,
 .card .btn-secondary {
   margin-top: var(--ams-space-4);
+}
+
+.guide-actions .btn-primary,
+.guide-actions .btn-secondary {
+  margin-top: 0;
 }
 
 .card .table-actions .btn-secondary,

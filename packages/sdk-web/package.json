@@ -12,7 +12,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "prepack": "pnpm build"
   },
   "dependencies": {
     "@ams/shared-types": "workspace:*"

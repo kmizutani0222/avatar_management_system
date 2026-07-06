@@ -173,7 +173,9 @@ dispose(); // 画面を閉じるとき`,
 
       <div className="card">
         <h2>@ams/sdk-web — クイックスタート</h2>
-        <p className="hint">モノレポ内パッケージ。npm 公開前は workspace 参照またはソースコピーで利用できます。</p>
+        <p className="hint">
+          <code>pnpm add @ams/sdk-web @ams/sdk-three three @pixiv/three-vrm</code> でインストールできます。
+        </p>
         <CodeBlock code={npmExample} />
       </div>
 
