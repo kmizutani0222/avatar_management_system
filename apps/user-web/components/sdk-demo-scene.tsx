@@ -12,6 +12,7 @@ import {
   isLoadedGlb,
   isLoadedVrm,
   loadAmsModel,
+  resolveVrmSceneRotationY,
   updateGlbRuntime,
   updateVrmRuntime,
   type ExpressionValues,
@@ -31,6 +32,8 @@ export interface SdkDemoCapabilities {
 export interface SdkDemoSceneProps {
   client: AmsClient;
   avatarId: string;
+  /** From ExternalAvatar.sourceType — controls VRM facing correction. */
+  sourceType?: string;
   expressions: ExpressionValues;
   locomotionInput: LocomotionInput;
   swayEnabled: boolean;
@@ -78,6 +81,7 @@ function FollowCamera({
 function SdkDemoModel({
   client,
   avatarId,
+  sourceType,
   expressions,
   locomotionInput,
   swayEnabled,
@@ -112,7 +116,11 @@ function SdkDemoModel({
         if (!rootRef.current) return;
 
         if (isLoadedVrm(loaded)) {
-          loaded.vrm.scene.rotation.y = Math.PI;
+          const sceneRotationY = resolveVrmSceneRotationY({
+            sourceType,
+            assetGenerator: loaded.gltf.asset?.generator,
+          });
+          loaded.vrm.scene.rotation.y = sceneRotationY;
           applyVrmRestPose(loaded.vrm);
           rootRef.current.add(loaded.vrm.scene);
           const expressionNames =
@@ -145,7 +153,7 @@ function SdkDemoModel({
       modelRef.current = null;
       if (rootRef.current) rootRef.current.clear();
     };
-  }, [client, avatarId, onLoaded, onError]);
+  }, [client, avatarId, sourceType, onLoaded, onError]);
 
   useFrame((_, delta) => {
     const model = modelRef.current;

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { ExternalAuthGuard } from '../auth/guards/external-auth.guard';
+import { SdkClientGuard } from '../auth/guards/sdk-client.guard';
 import { ExternalUserId } from '../auth/decorators/external-auth.decorator';
 import { AvatarsService } from './avatars.service';
 
@@ -15,7 +16,7 @@ export class ExternalAvatarsController {
   ) {}
 
   @Get()
-  @UseGuards(ExternalAuthGuard)
+  @UseGuards(ExternalAuthGuard, SdkClientGuard)
   @ApiBearerAuth()
   @ApiSecurity('api-key')
   list(@ExternalUserId() userId: string) {
@@ -23,7 +24,7 @@ export class ExternalAvatarsController {
   }
 
   @Get(':id/model')
-  @UseGuards(ExternalAuthGuard)
+  @UseGuards(ExternalAuthGuard, SdkClientGuard)
   @ApiBearerAuth()
   @ApiSecurity('api-key')
   async getModel(
@@ -45,7 +46,7 @@ export class ExternalAvatarsController {
   }
 
   @Get(':id/thumbnail')
-  @UseGuards(ExternalAuthGuard)
+  @UseGuards(ExternalAuthGuard, SdkClientGuard)
   @ApiBearerAuth()
   @ApiSecurity('api-key')
   async getThumbnail(
@@ -60,7 +61,7 @@ export class ExternalAvatarsController {
   }
 
   @Get(':id')
-  @UseGuards(ExternalAuthGuard)
+  @UseGuards(ExternalAuthGuard, SdkClientGuard)
   @ApiBearerAuth()
   @ApiSecurity('api-key')
   getOne(@ExternalUserId() userId: string, @Param('id') id: string) {

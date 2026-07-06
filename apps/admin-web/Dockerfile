@@ -5,6 +5,7 @@ WORKDIR /app
 FROM base AS deps
 COPY package.json pnpm-workspace.yaml ./
 COPY apps/admin-web/package.json ./apps/admin-web/
+COPY packages/admin-ui/package.json ./packages/admin-ui/
 COPY packages/shared-types/package.json ./packages/shared-types/
 COPY packages/web-auth/package.json ./packages/web-auth/
 COPY packages/parts-baker/package.json ./packages/parts-baker/
@@ -17,10 +18,10 @@ COPY --from=deps /app/packages/shared-types/node_modules ./packages/shared-types
 COPY --from=deps /app/packages/web-auth/node_modules ./packages/web-auth/node_modules
 COPY --from=deps /app/packages/parts-baker/node_modules ./packages/parts-baker/node_modules
 COPY . .
-RUN pnpm --filter @ams/shared-types build && pnpm --filter @ams/parts-baker build && pnpm --filter @ams/web-auth build
+RUN pnpm --filter @ams/shared-types build && pnpm --filter @ams/admin-ui build && pnpm --filter @ams/parts-baker build && pnpm --filter @ams/web-auth build
 WORKDIR /app/apps/admin-web
 EXPOSE 3000
-CMD ["sh", "-c", "pnpm install --filter @ams/admin-web... && pnpm --filter @ams/shared-types build && pnpm --filter @ams/parts-baker build && pnpm --filter @ams/web-auth build && pnpm dev"]
+CMD ["sh", "-c", "pnpm install --filter @ams/admin-web... && pnpm --filter @ams/shared-types build && pnpm --filter @ams/admin-ui build && pnpm --filter @ams/parts-baker build && pnpm --filter @ams/web-auth build && pnpm dev"]
 
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
@@ -29,7 +30,7 @@ COPY --from=deps /app/packages/shared-types/node_modules ./packages/shared-types
 COPY --from=deps /app/packages/web-auth/node_modules ./packages/web-auth/node_modules
 COPY --from=deps /app/packages/parts-baker/node_modules ./packages/parts-baker/node_modules
 COPY . .
-RUN pnpm --filter @ams/shared-types build && pnpm --filter @ams/parts-baker build && pnpm --filter @ams/web-auth build
+RUN pnpm --filter @ams/shared-types build && pnpm --filter @ams/admin-ui build && pnpm --filter @ams/parts-baker build && pnpm --filter @ams/web-auth build
 WORKDIR /app/apps/admin-web
 RUN pnpm build
 

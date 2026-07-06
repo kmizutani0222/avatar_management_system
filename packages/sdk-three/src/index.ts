@@ -203,6 +203,7 @@ export function updateVrmRuntime(
 export {
   applyVrmRestPose,
   createVrmLocomotionState,
+  resolveVrmSceneRotationY,
   updateVrmLocomotion,
   hasVrmHumanoid,
   hasDirectionInput,

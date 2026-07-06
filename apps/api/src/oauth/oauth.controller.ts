@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -15,12 +15,22 @@ import { OAuthService } from './oauth.service';
 export class OAuthController {
   constructor(private readonly oauthService: OAuthService) {}
 
+  /** Consent screen metadata (public, no auth). */
+  @Get('clients/:clientId')
+  getPublicClient(
+    @Param('clientId') clientId: string,
+    @Query('redirect_uri') redirectUri?: string,
+  ) {
+    return this.oauthService.getPublicClientInfo(clientId, redirectUri);
+  }
+
+  /** Issue authorization code (user JWT — browser consent or dev API). */
   @Post('authorize')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(ROLE_USER)
   @ApiBearerAuth()
   authorize(@CurrentUser() user: JwtPayload, @Body() dto: OAuthAuthorizeDto) {
-    return this.oauthService.authorize(user.sub, dto.clientId);
+    return this.oauthService.authorize(user.sub, dto.clientId, dto.redirectUri);
   }
 
   @Post('token')
@@ -36,6 +46,7 @@ export class OAuthController {
       dto.client_id,
       dto.client_secret,
       ip,
+      dto.redirect_uri,
     );
   }
 }

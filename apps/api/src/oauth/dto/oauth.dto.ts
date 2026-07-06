@@ -1,11 +1,16 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString, MinLength } from 'class-validator';
 
 export class OAuthAuthorizeDto {
   @ApiProperty({ example: 'cli_abc123' })
   @IsString()
   @MinLength(1)
   clientId!: string;
+
+  @ApiPropertyOptional({ example: 'http://localhost:4002/oauth/callback' })
+  @IsOptional()
+  @IsString()
+  redirectUri?: string;
 }
 
 export class OAuthTokenDto {
@@ -24,4 +29,9 @@ export class OAuthTokenDto {
   @ApiProperty()
   @IsString()
   client_secret!: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  redirect_uri?: string;
 }

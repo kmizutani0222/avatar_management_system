@@ -48,3 +48,10 @@ export function deactivateOAuthClient(token: string, id: string) {
     method: 'PATCH',
   });
 }
+
+export function updateOAuthClientRedirectUris(token: string, id: string, redirectUris: string[]) {
+  return operatorFetch<OAuthClientSummary>(token, `/api/operator/oauth-clients/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ redirectUris }),
+  });
+}

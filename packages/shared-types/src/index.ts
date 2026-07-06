@@ -191,6 +191,13 @@ export interface OAuthAuthorizeResponse {
   expiresIn: number;
 }
 
+/** Public metadata for OAuth consent screen (no secrets). */
+export interface OAuthPublicClientInfo {
+  clientId: string;
+  name: string;
+  operatorName: string;
+}
+
 export interface OAuthTokenResponse {
   access_token: string;
   token_type: string;
@@ -240,6 +247,15 @@ export interface AuthProfile {
   displayName?: string;
   companyName?: string;
   status?: string;
+  xUsername?: string | null;
+  profileMessage?: string | null;
+  hasProfileIcon?: boolean;
+}
+
+export interface UpdateUserProfileInput {
+  displayName?: string;
+  xUsername?: string | null;
+  profileMessage?: string | null;
 }
 
 export interface AuthTokens {

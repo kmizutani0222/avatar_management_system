@@ -1,5 +1,10 @@
 import type { AvatarBodyType } from '@ams/shared-types';
 
+/** Sent on every AmsClient request — required by external avatar API. */
+export const AMS_SDK_WEB_VERSION = '0.0.1';
+export const AMS_SDK_CLIENT_HEADER = 'X-AMS-SDK-Client';
+export const AMS_SDK_CLIENT_ID = `@ams/sdk-web/${AMS_SDK_WEB_VERSION}`;
+
 export interface AmsClientOptions {
   /** API base URL e.g. https://api.example.com */
   apiBase: string;
@@ -34,6 +39,7 @@ export class AmsClient {
   private headers(extra?: HeadersInit): HeadersInit {
     const h: Record<string, string> = {
       Accept: 'application/json',
+      [AMS_SDK_CLIENT_HEADER]: AMS_SDK_CLIENT_ID,
       ...(extra as Record<string, string> | undefined),
     };
     if (this.options.accessToken) {

@@ -65,6 +65,31 @@ export class OAuthClientsService {
     return { ...record, clientSecret };
   }
 
+  async updateRedirectUris(operatorId: string, id: string, redirectUris: string[]) {
+    await this.assertActiveOperator(operatorId);
+
+    const record = await this.prisma.oAuthClient.findFirst({
+      where: { id, operatorId },
+    });
+    if (!record) throw new NotFoundException('OAuth client not found');
+    if (!record.isActive) {
+      throw new ForbiddenException('Inactive OAuth client cannot be updated');
+    }
+
+    return this.prisma.oAuthClient.update({
+      where: { id },
+      data: { redirectUris },
+      select: {
+        id: true,
+        clientId: true,
+        name: true,
+        redirectUris: true,
+        isActive: true,
+        createdAt: true,
+      },
+    });
+  }
+
   async deactivate(operatorId: string, clientId: string) {
     const record = await this.prisma.oAuthClient.findFirst({
       where: { id: clientId, operatorId },

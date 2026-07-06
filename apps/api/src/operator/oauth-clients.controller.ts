@@ -8,7 +8,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { ROLE_OPERATOR } from '../common/constants';
 import { OAuthClientsService } from './oauth-clients.service';
-import { CreateOAuthClientDto } from './dto/oauth-client.dto';
+import { CreateOAuthClientDto, UpdateOAuthClientDto } from './dto/oauth-client.dto';
 
 @ApiTags('operator-oauth-clients')
 @ApiBearerAuth()
@@ -26,6 +26,11 @@ export class OAuthClientsController {
   @Post()
   create(@CurrentUser() user: JwtPayload, @Body() dto: CreateOAuthClientDto) {
     return this.oauthClientsService.create(user.sub, dto);
+  }
+
+  @Patch(':id')
+  update(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: UpdateOAuthClientDto) {
+    return this.oauthClientsService.updateRedirectUris(user.sub, id, dto.redirectUris);
   }
 
   @Patch(':id/deactivate')

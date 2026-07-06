@@ -5,6 +5,9 @@ WORKDIR /app
 FROM base AS deps
 COPY package.json pnpm-workspace.yaml ./
 COPY apps/operator-web/package.json ./apps/operator-web/
+COPY packages/sdk-web/package.json ./packages/sdk-web/
+COPY packages/sdk-three/package.json ./packages/sdk-three/
+COPY packages/admin-ui/package.json ./packages/admin-ui/
 COPY packages/shared-types/package.json ./packages/shared-types/
 COPY packages/web-auth/package.json ./packages/web-auth/
 RUN pnpm install --filter @ams/operator-web...
@@ -15,10 +18,10 @@ COPY --from=deps /app/apps/operator-web/node_modules ./apps/operator-web/node_mo
 COPY --from=deps /app/packages/shared-types/node_modules ./packages/shared-types/node_modules
 COPY --from=deps /app/packages/web-auth/node_modules ./packages/web-auth/node_modules
 COPY . .
-RUN pnpm --filter @ams/shared-types build && pnpm --filter @ams/web-auth build
+RUN pnpm --filter @ams/shared-types build && pnpm --filter @ams/sdk-web build && pnpm --filter @ams/sdk-three build && pnpm --filter @ams/admin-ui build && pnpm --filter @ams/web-auth build
 WORKDIR /app/apps/operator-web
 EXPOSE 3000
-CMD ["sh", "-c", "pnpm install --filter @ams/operator-web... && pnpm --filter @ams/shared-types build && pnpm --filter @ams/web-auth build && pnpm dev"]
+CMD ["sh", "-c", "pnpm install --filter @ams/operator-web... && pnpm --filter @ams/shared-types build && pnpm --filter @ams/sdk-web build && pnpm --filter @ams/sdk-three build && pnpm --filter @ams/admin-ui build && pnpm --filter @ams/web-auth build && pnpm dev"]
 
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
@@ -26,7 +29,7 @@ COPY --from=deps /app/apps/operator-web/node_modules ./apps/operator-web/node_mo
 COPY --from=deps /app/packages/shared-types/node_modules ./packages/shared-types/node_modules
 COPY --from=deps /app/packages/web-auth/node_modules ./packages/web-auth/node_modules
 COPY . .
-RUN pnpm --filter @ams/shared-types build && pnpm --filter @ams/web-auth build
+RUN pnpm --filter @ams/shared-types build && pnpm --filter @ams/sdk-web build && pnpm --filter @ams/sdk-three build && pnpm --filter @ams/admin-ui build && pnpm --filter @ams/web-auth build
 WORKDIR /app/apps/operator-web
 RUN pnpm build
 

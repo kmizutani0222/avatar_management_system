@@ -11,6 +11,7 @@ import { AdminModule } from './admin/admin.module';
 import { OperatorModule } from './operator/operator.module';
 import { OAuthModule } from './oauth/oauth.module';
 import { SettingsModule } from './settings/settings.module';
+import { UserProfileModule } from './user-profile/user-profile.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { SettingsModule } from './settings/settings.module';
     OperatorModule,
     OAuthModule,
     SettingsModule,
+    UserProfileModule,
   ],
 })
 export class AppModule {}

@@ -117,6 +117,42 @@ export class StorageService implements OnModuleInit {
     return key;
   }
 
+  validateProfileIconFile(file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Profile icon file is required');
+    const maxBytes = 2 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      throw new BadRequestException('Profile icon must be 2MB or less');
+    }
+    const allowed = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    if (!allowed.includes(file.mimetype)) {
+      throw new BadRequestException('Profile icon must be PNG, JPEG, WebP, or GIF');
+    }
+  }
+
+  async uploadProfileIcon(userId: string, file: Express.Multer.File): Promise<string> {
+    this.validateProfileIconFile(file);
+    const ext =
+      file.mimetype === 'image/png'
+        ? 'png'
+        : file.mimetype === 'image/webp'
+          ? 'webp'
+          : file.mimetype === 'image/gif'
+            ? 'gif'
+            : 'jpg';
+    const key = `profile-icons/${userId}/${randomUUID()}.${ext}`;
+
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      }),
+    );
+
+    return key;
+  }
+
   baseTemplateKey(bodyType: string): string {
     // v4: humanoid body is a SkinnedMesh with vertex weights (Phase 17)
     return `templates/${bodyType}/base-v4.glb`;

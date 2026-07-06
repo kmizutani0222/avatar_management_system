@@ -11,6 +11,7 @@ import { ApiKeyGuard } from './guards/api-key.guard';
 import { OAuthTokenGuard } from './guards/oauth-token.guard';
 import { UserSessionExternalGuard } from './guards/user-session-external.guard';
 import { ExternalAuthGuard } from './guards/external-auth.guard';
+import { SdkClientGuard } from './guards/sdk-client.guard';
 import { OriginCheckService } from '../common/origin-check.service';
 
 @Module({
@@ -35,6 +36,7 @@ import { OriginCheckService } from '../common/origin-check.service';
     OAuthTokenGuard,
     UserSessionExternalGuard,
     ExternalAuthGuard,
+    SdkClientGuard,
   ],
   exports: [
     AuthService,
@@ -45,6 +47,7 @@ import { OriginCheckService } from '../common/origin-check.service';
     OAuthTokenGuard,
     UserSessionExternalGuard,
     ExternalAuthGuard,
+    SdkClientGuard,
   ],
 })
 export class AuthModule {}

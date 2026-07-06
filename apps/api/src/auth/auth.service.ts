@@ -106,6 +106,9 @@ export class AuthService {
         email: user.email,
         role: ROLE_USER as AuthRole,
         displayName: user.displayName,
+        xUsername: user.xUsername,
+        profileMessage: user.profileMessage,
+        hasProfileIcon: Boolean(user.profileIconUrl),
       };
     }
 

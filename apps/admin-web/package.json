@@ -8,6 +8,7 @@
     "start": "next start -p 3000"
   },
   "dependencies": {
+    "@ams/admin-ui": "workspace:*",
     "@ams/parts-baker": "workspace:*",
     "@ams/shared-types": "workspace:*",
     "@ams/web-auth": "workspace:*",

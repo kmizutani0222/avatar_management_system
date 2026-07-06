@@ -43,6 +43,16 @@ export function hasVrmHumanoid(vrm: VRM): boolean {
   return Boolean(vrm.humanoid?.getNormalizedBoneNode('hips'));
 }
 
+export function resolveVrmSceneRotationY(options?: {
+  sourceType?: string;
+  assetGenerator?: string;
+}): number {
+  // AMS parts-baked VRM already faces the viewer; external uploads need a 180° Y flip.
+  if (options?.sourceType === 'parts') return 0;
+  if (options?.assetGenerator?.includes('AMS Parts Baker')) return 0;
+  return Math.PI;
+}
+
 /** Rotate upper arms down from the default T-pose. */
 export function applyVrmRestPose(vrm: VRM): void {
   const humanoid = vrm.humanoid;

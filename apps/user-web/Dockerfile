@@ -7,6 +7,7 @@ COPY package.json pnpm-workspace.yaml ./
 COPY apps/user-web/package.json ./apps/user-web/
 COPY packages/shared-types/package.json ./packages/shared-types/
 COPY packages/web-auth/package.json ./packages/web-auth/
+COPY packages/admin-ui/package.json ./packages/admin-ui/
 COPY packages/avatar-viewer/package.json ./packages/avatar-viewer/
 COPY packages/sdk-web/package.json ./packages/sdk-web/
 COPY packages/sdk-three/package.json ./packages/sdk-three/
@@ -17,25 +18,27 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/user-web/node_modules ./apps/user-web/node_modules
 COPY --from=deps /app/packages/shared-types/node_modules ./packages/shared-types/node_modules
 COPY --from=deps /app/packages/web-auth/node_modules ./packages/web-auth/node_modules
+COPY --from=deps /app/packages/admin-ui/node_modules ./packages/admin-ui/node_modules
 COPY --from=deps /app/packages/avatar-viewer/node_modules ./packages/avatar-viewer/node_modules
 COPY --from=deps /app/packages/sdk-web/node_modules ./packages/sdk-web/node_modules
 COPY --from=deps /app/packages/sdk-three/node_modules ./packages/sdk-three/node_modules
 COPY . .
-RUN pnpm --filter @ams/shared-types build && pnpm --filter @ams/web-auth build && pnpm --filter @ams/sdk-web build && pnpm --filter @ams/sdk-three build && pnpm --filter @ams/avatar-viewer build
+RUN pnpm --filter @ams/shared-types build && pnpm --filter @ams/web-auth build && pnpm --filter @ams/admin-ui build && pnpm --filter @ams/sdk-web build && pnpm --filter @ams/sdk-three build && pnpm --filter @ams/avatar-viewer build
 WORKDIR /app/apps/user-web
 EXPOSE 3000
-CMD ["sh", "-c", "pnpm install --filter @ams/user-web... && pnpm --filter @ams/shared-types build && pnpm --filter @ams/web-auth build && pnpm --filter @ams/sdk-web build && pnpm --filter @ams/sdk-three build && pnpm --filter @ams/avatar-viewer build && pnpm dev"]
+CMD ["sh", "-c", "pnpm install --filter @ams/user-web... && pnpm --filter @ams/shared-types build && pnpm --filter @ams/web-auth build && pnpm --filter @ams/admin-ui build && pnpm --filter @ams/sdk-web build && pnpm --filter @ams/sdk-three build && pnpm --filter @ams/avatar-viewer build && pnpm dev"]
 
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/user-web/node_modules ./apps/user-web/node_modules
 COPY --from=deps /app/packages/shared-types/node_modules ./packages/shared-types/node_modules
 COPY --from=deps /app/packages/web-auth/node_modules ./packages/web-auth/node_modules
+COPY --from=deps /app/packages/admin-ui/node_modules ./packages/admin-ui/node_modules
 COPY --from=deps /app/packages/avatar-viewer/node_modules ./packages/avatar-viewer/node_modules
 COPY --from=deps /app/packages/sdk-web/node_modules ./packages/sdk-web/node_modules
 COPY --from=deps /app/packages/sdk-three/node_modules ./packages/sdk-three/node_modules
 COPY . .
-RUN pnpm --filter @ams/shared-types build && pnpm --filter @ams/web-auth build && pnpm --filter @ams/sdk-web build && pnpm --filter @ams/sdk-three build && pnpm --filter @ams/avatar-viewer build
+RUN pnpm --filter @ams/shared-types build && pnpm --filter @ams/web-auth build && pnpm --filter @ams/admin-ui build && pnpm --filter @ams/sdk-web build && pnpm --filter @ams/sdk-three build && pnpm --filter @ams/avatar-viewer build
 WORKDIR /app/apps/user-web
 RUN pnpm build
 

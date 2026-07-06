@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.module';
@@ -16,6 +17,7 @@ import { RateLimitService } from '../redis/rate-limit.service';
 interface PendingAuthCode {
   userId: string;
   clientId: string;
+  redirectUri?: string;
 }
 
 @Injectable()
@@ -33,6 +35,44 @@ export class OAuthService {
 
   private codeKey(code: string) {
     return `oauth:code:${code}`;
+  }
+
+  private parseRedirectUris(raw: unknown): string[] {
+    if (!Array.isArray(raw)) return [];
+    return raw.filter((item): item is string => typeof item === 'string');
+  }
+
+  assertRedirectUri(redirectUris: unknown, redirectUri: string) {
+    const allowed = this.parseRedirectUris(redirectUris);
+    if (allowed.length === 0) {
+      throw new BadRequestException('OAuth client has no redirect URIs configured');
+    }
+    if (!allowed.includes(redirectUri)) {
+      throw new BadRequestException('Invalid redirect_uri');
+    }
+  }
+
+  private async assertActiveClient(clientId: string) {
+    const client = await this.oauthClientsService.findByClientId(clientId);
+    if (!client || !client.isActive || client.operator.status !== 'active') {
+      throw new UnauthorizedException('Invalid OAuth client');
+    }
+    return client;
+  }
+
+  async getPublicClientInfo(clientId: string, redirectUri?: string) {
+    const client = await this.oauthClientsService.findByClientId(clientId);
+    if (!client || !client.isActive || client.operator.status !== 'active') {
+      throw new NotFoundException('OAuth client not found');
+    }
+    if (redirectUri) {
+      this.assertRedirectUri(client.redirectUris, redirectUri);
+    }
+    return {
+      clientId: client.clientId,
+      name: client.name,
+      operatorName: client.operator.companyName,
+    };
   }
 
   private async storePendingCode(code: string, payload: PendingAuthCode) {
@@ -57,17 +97,18 @@ export class OAuthService {
       return null;
     }
     this.pendingCodes.delete(code);
-    return { userId: pending.userId, clientId: pending.clientId };
+    return { userId: pending.userId, clientId: pending.clientId, redirectUri: pending.redirectUri };
   }
 
-  async authorize(userId: string, clientId: string) {
-    const client = await this.oauthClientsService.findByClientId(clientId);
-    if (!client || !client.isActive || client.operator.status !== 'active') {
-      throw new UnauthorizedException('Invalid OAuth client');
+  async authorize(userId: string, clientId: string, redirectUri?: string) {
+    const client = await this.assertActiveClient(clientId);
+
+    if (redirectUri) {
+      this.assertRedirectUri(client.redirectUris, redirectUri);
     }
 
     const code = generateAuthCode();
-    await this.storePendingCode(code, { userId, clientId });
+    await this.storePendingCode(code, { userId, clientId, redirectUri });
 
     return {
       code,
@@ -81,6 +122,7 @@ export class OAuthService {
     clientId: string,
     clientSecret: string,
     clientIp = 'unknown',
+    redirectUri?: string,
   ) {
     if (grantType !== 'authorization_code') {
       throw new BadRequestException('Unsupported grant_type');
@@ -101,6 +143,12 @@ export class OAuthService {
     const pending = await this.consumePendingCode(code, clientId);
     if (!pending) {
       throw new UnauthorizedException('Invalid or expired authorization code');
+    }
+
+    if (pending.redirectUri) {
+      if (!redirectUri || redirectUri !== pending.redirectUri) {
+        throw new UnauthorizedException('Invalid redirect_uri');
+      }
     }
 
     const accessToken = generateOAuthAccessToken();
