@@ -15,9 +15,23 @@ export const ADMIN_NAV: NavItem[] = [
   { href: '/settings/expressions', label: '表情モーフ', icon: '😊', section: '設定' },
 ];
 
+export const ADMIN_MANAGERS_NAV: NavItem = {
+  href: '/admins',
+  label: '管理者',
+  icon: '🛡',
+  section: '管理',
+};
+
+export function buildAdminNav(isSuperAdmin: boolean): NavItem[] {
+  if (!isSuperAdmin) return ADMIN_NAV;
+  const items = [...ADMIN_NAV];
+  const operatorIndex = items.findIndex((item) => item.href === '/operators');
+  items.splice(operatorIndex + 1, 0, ADMIN_MANAGERS_NAV);
+  return items;
+}
+
 export const USER_NAV: NavItem[] = [
   { href: '/dashboard', label: 'マイアバター', icon: '🎭', section: 'ホーム' },
-  { href: '/account', label: 'アカウント', icon: '👤', section: 'ホーム' },
   { href: '/avatars/new', label: '新規作成', icon: '✨', section: '作成' },
   { href: '/sdk-demo', label: 'SDK デモ', icon: '🧪', section: '連携' },
 ];

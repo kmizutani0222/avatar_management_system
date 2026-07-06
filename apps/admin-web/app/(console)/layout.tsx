@@ -1,12 +1,17 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { RequireAuth, useAuth } from '@ams/web-auth';
-import { AdminConsole, ADMIN_NAV } from '@ams/admin-ui';
+import { AdminConsole, buildAdminNav } from '@ams/admin-ui';
 
 function ConsoleLayoutInner({ children }: { children: React.ReactNode }) {
   const { profile, logout } = useAuth();
   const router = useRouter();
+  const navItems = useMemo(
+    () => buildAdminNav(profile?.adminLevel === 'super'),
+    [profile?.adminLevel],
+  );
 
   return (
     <AdminConsole
@@ -14,7 +19,7 @@ function ConsoleLayoutInner({ children }: { children: React.ReactNode }) {
       brandTitle="AMS Admin"
       brandSubtitle="Avatar Management System"
       badgeLabel="Admin"
-      navItems={ADMIN_NAV}
+      navItems={navItems}
       userName={profile?.displayName}
       userEmail={profile?.email}
       onLogout={() => {

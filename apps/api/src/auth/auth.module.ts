@@ -12,6 +12,7 @@ import { OAuthTokenGuard } from './guards/oauth-token.guard';
 import { UserSessionExternalGuard } from './guards/user-session-external.guard';
 import { ExternalAuthGuard } from './guards/external-auth.guard';
 import { SdkClientGuard } from './guards/sdk-client.guard';
+import { SuperAdminGuard } from './guards/super-admin.guard';
 import { OriginCheckService } from '../common/origin-check.service';
 
 @Module({
@@ -37,6 +38,7 @@ import { OriginCheckService } from '../common/origin-check.service';
     UserSessionExternalGuard,
     ExternalAuthGuard,
     SdkClientGuard,
+    SuperAdminGuard,
   ],
   exports: [
     AuthService,
@@ -48,6 +50,7 @@ import { OriginCheckService } from '../common/origin-check.service';
     UserSessionExternalGuard,
     ExternalAuthGuard,
     SdkClientGuard,
+    SuperAdminGuard,
   ],
 })
 export class AuthModule {}

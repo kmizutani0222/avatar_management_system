@@ -413,11 +413,12 @@ async function main() {
 
   await prisma.admin.upsert({
     where: { email: 'admin@example.com' },
-    update: {},
+    update: { level: 'super' },
     create: {
       email: 'admin@example.com',
       passwordHash: adminPassword,
       name: 'System Admin',
+      level: 'super',
     },
   });
 

@@ -7,7 +7,7 @@ import { getApiUrl } from '@/lib/api';
 import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
-  const { profile, token } = useAuth();
+  const { token } = useAuth();
   const [avatarCount, setAvatarCount] = useState<number | null>(null);
   const [partCount, setPartCount] = useState<number | null>(null);
 
@@ -27,18 +27,6 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader title="管理ダッシュボード" subtitle="AMS 全体の概要とクイックアクセス" />
-
-      <div className="card">
-        <h2>ログイン中</h2>
-        <dl className="profile-dl">
-          <dt>名前</dt>
-          <dd>{profile?.displayName ?? '—'}</dd>
-          <dt>メール</dt>
-          <dd>{profile?.email}</dd>
-          <dt>ロール</dt>
-          <dd>{profile?.role}</dd>
-        </dl>
-      </div>
 
       <div className="stats-grid">
         <div className="card stat-card">

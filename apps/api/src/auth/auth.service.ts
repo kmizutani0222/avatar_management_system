@@ -95,6 +95,7 @@ export class AuthService {
         email: admin.email,
         role: ROLE_ADMIN as AuthRole,
         displayName: admin.name,
+        adminLevel: admin.level,
       };
     }
 

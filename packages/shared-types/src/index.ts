@@ -240,6 +240,8 @@ export interface AuthLoginResponse {
   role: UserRole;
 }
 
+export type AdminLevel = 'super' | 'standard';
+
 export interface AuthProfile {
   id: string;
   email: string;
@@ -247,6 +249,7 @@ export interface AuthProfile {
   displayName?: string;
   companyName?: string;
   status?: string;
+  adminLevel?: AdminLevel;
   xUsername?: string | null;
   profileMessage?: string | null;
   hasProfileIcon?: boolean;
@@ -256,6 +259,29 @@ export interface UpdateUserProfileInput {
   displayName?: string;
   xUsername?: string | null;
   profileMessage?: string | null;
+}
+
+export interface UpdateAdminProfileInput {
+  name?: string;
+}
+
+export interface UpdateOperatorProfileInput {
+  companyName?: string;
+}
+
+export interface CreateAdminInput {
+  email: string;
+  password: string;
+  name: string;
+}
+
+export interface AdminAccount {
+  id: string;
+  email: string;
+  name: string;
+  level: AdminLevel;
+  isActive: boolean;
+  createdAt: string;
 }
 
 export interface AuthTokens {

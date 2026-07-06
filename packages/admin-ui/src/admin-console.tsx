@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { groupNavBySection, type NavItem } from './nav-config';
 
 export interface AdminConsoleProps {
@@ -11,6 +11,7 @@ export interface AdminConsoleProps {
   brandSubtitle?: string;
   badgeLabel?: string;
   navItems: NavItem[];
+  accountHref?: string;
   userName?: string;
   userEmail?: string;
   onLogout?: () => void;
@@ -22,12 +23,17 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function isAccountActive(pathname: string, accountHref: string): boolean {
+  return pathname === accountHref || pathname.startsWith(`${accountHref}/`);
+}
+
 export function AdminConsole({
   theme,
   brandTitle,
   brandSubtitle,
   badgeLabel,
   navItems,
+  accountHref = '/account',
   userName,
   userEmail,
   onLogout,
@@ -36,6 +42,26 @@ export function AdminConsole({
   const pathname = usePathname();
   const sections = groupNavBySection(navItems);
   const activeItem = navItems.find((item) => isActive(pathname, item.href));
+  const accountActive = isAccountActive(pathname, accountHref);
+  const topbarTitle = accountActive ? 'アカウント' : (activeItem?.label ?? brandTitle);
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const footerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (footerRef.current && !footerRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    return () => document.removeEventListener('mousedown', onPointerDown);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
 
   return (
     <div className="ams-console" data-theme={theme}>
@@ -64,24 +90,58 @@ export function AdminConsole({
           ))}
         </nav>
 
-        <div className="ams-sidebar-footer">
-          {(userName || userEmail) && (
-            <div className="ams-sidebar-user">
-              {userName && <div className="ams-sidebar-user-name">{userName}</div>}
-              {userEmail && <div className="ams-sidebar-user-email">{userEmail}</div>}
+        <div className="ams-sidebar-footer" ref={footerRef}>
+          <button
+            type="button"
+            className={`ams-sidebar-account-menu${menuOpen || accountActive ? ' active' : ''}`}
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-expanded={menuOpen}
+            aria-haspopup="menu"
+          >
+            <span className="ams-sidebar-account-icon" aria-hidden>
+              👤
+            </span>
+            <span className="ams-sidebar-account-body">
+              <span className="ams-sidebar-account-title">アカウント</span>
+              {userName && <span className="ams-sidebar-user-name">{userName}</span>}
+              {userEmail && <span className="ams-sidebar-user-email">{userEmail}</span>}
+            </span>
+            <span className="ams-sidebar-account-chevron" aria-hidden>
+              {menuOpen ? '▴' : '▾'}
+            </span>
+          </button>
+
+          {menuOpen && (
+            <div className="ams-sidebar-account-popup" role="menu">
+              <Link
+                href={accountHref}
+                className="ams-sidebar-account-popup-item"
+                role="menuitem"
+                onClick={() => setMenuOpen(false)}
+              >
+                アカウント
+              </Link>
+              {onLogout && (
+                <button
+                  type="button"
+                  className="ams-sidebar-account-popup-item ams-sidebar-account-popup-logout"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onLogout();
+                  }}
+                >
+                  ログアウト
+                </button>
+              )}
             </div>
-          )}
-          {onLogout && (
-            <button type="button" className="btn-secondary btn-sm" style={{ width: '100%' }} onClick={onLogout}>
-              ログアウト
-            </button>
           )}
         </div>
       </aside>
 
       <div className="ams-main">
         <header className="ams-topbar">
-          <span className="ams-topbar-title">{activeItem?.label ?? brandTitle}</span>
+          <span className="ams-topbar-title">{topbarTitle}</span>
         </header>
         <div className="ams-content">{children}</div>
       </div>
